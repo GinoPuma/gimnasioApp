@@ -1,16 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const Usuario = require('../models/Usuario');
+const bcrypt = require('bcryptjs');
 
-router.post('/', async (req,res) => {
-    try {
-        const usuario = new Usuario(req.body);
-        await usuario.save();
-        res.status(201).json(usuario);
+router.post('/', async (req, res) => {
+  try {
+    const hashedPassword = await bcrypt.hash(req.body.contrasenia, 10);
+    req.body.contrasenia = hashedPassword;
 
-    } catch (err) {
-        res.status(400).json({ error: err.message})    
-    }
+    const usuario = new Usuario(req.body);
+    await usuario.save();
+    res.status(201).json(usuario);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 router.get('/', async (req, res) => {

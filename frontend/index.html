@@ -6,22 +6,24 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Usuarios</h1>
+  <div class="container">
+    <h1>Gestión de Usuarios - Gimnasio</h1>
 
-  <form id="formUsuario">
-    <input type="text" name="nombre" placeholder="Nombre" required>
-    <input type="text" name="apellido" placeholder="Apellido" required>
-    <input type="email" name="correo" placeholder="Correo" required>
-    <input type="password" name="contrasenia" placeholder="Contraseña" required>
-    <input type="text" name="telefono" placeholder="Teléfono" required>
-    <input type="date" name="fechaNacimiento" required>
-    <input type="text" name="genero" placeholder="Género" required>
-    <input type="text" name="tipoUsuario" placeholder="Tipo de Usuario" required>
-    <button type="submit">Registrar Usuario</button>
-  </form>
+    <form id="formUsuario" class="formulario">
+      <input type="text" name="nombre" placeholder="Nombre" required>
+      <input type="text" name="apellido" placeholder="Apellido" required>
+      <input type="email" name="correo" placeholder="Correo" required>
+      <input type="password" name="contrasenia" placeholder="Contraseña" required>
+      <input type="text" name="telefono" placeholder="Teléfono" required>
+      <input type="date" name="fechaNacimiento" required>
+      <input type="text" name="genero" placeholder="Género" required>
+      <input type="text" name="tipoUsuario" placeholder="Tipo de Usuario" required>
+      <button type="submit">Registrar Usuario</button>
+    </form>
 
-  <h2>Lista de Usuarios</h2>
-  <ul id="listaUsuarios"></ul>
+    <h2>Lista de Usuarios</h2>
+    <ul id="listaUsuarios" class="lista-usuarios"></ul>
+  </div>
 
   <script src="script.js"></script>
 </body>

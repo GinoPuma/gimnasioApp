@@ -8,4 +8,4 @@ const entrenadorSchema = new mongoose.Schema({
     descripcionPerfil: String
 });
 
-module.exports = mongoose.model('Entrenador', entrenadorSchema);
+module.exports = mongoose.model('entrenadores', entrenadorSchema);

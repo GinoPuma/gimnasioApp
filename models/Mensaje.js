@@ -8,4 +8,4 @@ const mensajeSchema = new mongoose.Schema({
     leido: { type: Boolean, default: false }
 });
   
-module.exports = mongoose.model('Mensaje', mensajeSchema);
+module.exports = mongoose.model('mensajes', mensajeSchema);

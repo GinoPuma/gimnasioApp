@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const clienteSchema = new mongoose.Schema({
-    usuarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
+    usuarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'usuarios', required: true},
     objetivo: String,
     nivel: String,
-    obsrvaciones: String
+    observaciones: String
 });
 
-module.exports = mongoose.model('Cliente', clienteSchema);
+module.exports = mongoose.model('clientes', clienteSchema);

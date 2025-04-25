@@ -7,4 +7,4 @@ const ejercicioSchema = new mongoose.Schema({
     equipoNecesario: String
 });
   
-module.exports = mongoose.model('Ejercicio', ejercicioSchema);
+module.exports = mongoose.model('ejercicios', ejercicioSchema);

@@ -11,4 +11,4 @@ const progresoFisicoSchema = new mongoose.Schema({
     observaciones: String
 });
   
-module.exports = mongoose.model('ProgresoFisico', progresoFisicoSchema);
+module.exports = mongoose.model('progreso_fisico', progresoFisicoSchema);

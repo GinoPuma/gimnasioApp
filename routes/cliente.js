@@ -1,20 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const Cliente = require('../models/Cliente');
+const clienteController = require('../controllers/clienteController');
+const { verificarToken } = require('../middlewares/userMiddleware');
 
-router.post('/', async (req, res) => {
-  try {
-    const cliente = new Cliente(req.body);
-    await cliente.save();
-    res.status(201).json(cliente);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-router.get('/', async (req, res) => {
-  const clientes = await Cliente.find().populate('usuarioId');
-  res.json(clientes);
-});
+router.get('/:usuarioId', clienteController.obtenerCliente);
+router.get('/', clienteController.obtenerClientes)
+router.post('/', clienteController.crearCliente);
 
 module.exports = router;

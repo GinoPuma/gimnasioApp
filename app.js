@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const connection = require('./database/connection')
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
@@ -18,13 +18,6 @@ app.use('/api/progresos', require('./routes/progreso'));
 app.use('/api/dietas', require('./routes/dietas'));
 app.use('/api/mensajes', require('./routes/mensajes'));
 
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+app.listen(3000, () => {
+    console.log('Aplicacion ejecutandose en el puerto 3000')
 })
-.then(() => console.log("Conectado a MongoDB"))
-.catch(err => console.error("Error conectando a MongoDB:", err));
-
-app.listen(process.env.PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${process.env.PORT}`)
-});

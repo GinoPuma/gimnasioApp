@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard del Entrenador</title>
+    <link rel="stylesheet" href="/css/styles.css"> <!-- Asegúrate de tener un CSS bonito aquí -->
+    <style>
+        /* Estilos rápidos por si no tienes CSS aún */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #56CCF2, #2F80ED);
+            color: #fff;
+        }
+
+        header {
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        nav ul li {
+            display: inline;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #fff;
+            background-color: #1b6ca8;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            background-color: #145388;
+        }
+
+        .content {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .content h2 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .content p {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>¡Bienvenido, <%= nombre %>!</h1>
+        <nav>
+            <ul>
+                <li><a href="/entrenadores/<%= idEntrenador %>/rutinas">Mis Rutinas</a></li>
+                <li><a href="/entrenadores/<%= idEntrenador %>/clientes">Mis Clientes</a></li>
+                <li><a href="/entrenadores/<%= idEntrenador %>/dietas">Planificar Dietas</a></li>
+                <li><a href="/logout">Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="content">
+        <h2>Panel del Entrenador</h2>
+        <p>Gestiona tus rutinas, crea dietas personalizadas para tus clientes y haz seguimiento a su progreso físico.</p>
+    </div>
+
+</body>
+</html>

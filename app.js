@@ -28,6 +28,8 @@ app.use('/api/rutinas', require('./routes/rutinas'));
 app.use('/api/progresos', require('./routes/progreso'));
 app.use('/api/dietas', require('./routes/dietas'));
 app.use('/api/mensajes', require('./routes/mensajes'));
+app.use('/', require('./routes/login'));
+
 
 // Rutas de frontend (login, registro)
 app.use('/frontend', require('./routes/frontend'));

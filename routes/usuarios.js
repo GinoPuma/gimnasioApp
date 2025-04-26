@@ -1,40 +1,37 @@
 const express = require('express');
 const router = express.Router();
-const usuarioController = require('../controllers/usuarioController');
-const { verificarToken } = require('../middlewares/userMiddleware');
+const Usuario = require('../models/Usuario');  // Asegúrate de que la ruta al modelo sea correcta
+const { verificarCliente } = require('../middlewares/verificarClienteMiddlewars');
+const { verificarEntrenador } = require('../middlewares/verificarEntrenadorMiddleware');
 
-// Ruta para verificar si el correo ya existe
-router.get('/:correo', async (req, res) => {
+// Ruta para registrar un usuario
+router.post('/registrar', async (req, res, next) => {
     try {
-        const usuario = await Usuario.findOne({ correo: req.params.correo });
-        if (usuario) {
-            return res.json(usuario);  // Si existe, retornar usuario
-        }
-        res.json(null);  // Si no existe, retornar null
+        // Creación del usuario
+        const nuevoUsuario = new Usuario({
+            nombre: req.body.nombre,
+            apellido: req.body.apellido,
+            correo: req.body.correo,
+            contrasenia: req.body.contrasenia,
+            telefono: req.body.telefono,
+            fechaNacimiento: req.body.fechaNacimiento,
+            genero: req.body.genero,
+            tipoUsuario: req.body.tipoUsuario,
+            fechaRegistro: new Date(),
+            estado: 'inactivo'
+        });
+
+        // Guardamos el usuario y pasamos el usuarioId al siguiente middleware
+        const usuarioGuardado = await nuevoUsuario.save();
+        req.usuarioId = usuarioGuardado._id;
+        next(); // Continuamos con los middlewares de verificación (Cliente/Entrenador)
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error al registrar usuario:', error);
+        res.status(500).json({ error: 'Error al registrar usuario' });
     }
+}, verificarCliente, verificarEntrenador, (req, res) => {
+    res.status(201).json({ mensaje: 'Usuario registrado correctamente.' });
 });
 
-// Ruta para login
-router.post('/login', usuarioController.loginUsuario);
-
-// Ruta para crear un usuario
-router.post('/', usuarioController.crearUsuario); 
-
-// Obtener todos los usuarios
-router.get('/', usuarioController.obtenerUsuarios); 
-
-// Actualizar un usuario
-router.put('/:id', usuarioController.actualizarUsuario); 
-
-// Eliminar un usuario (Soft Delete)
-router.delete('/:id', usuarioController.eliminarUsuario); 
-
-// Obtener perfil de usuario
-router.get('/perfil', verificarToken, async (req, res) => {
-    const usuario = await Usuario.findById(req.usuarioId);
-    res.json(usuario);
-});
-
+// Exportamos las rutas
 module.exports = router;

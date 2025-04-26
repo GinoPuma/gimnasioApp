@@ -50,8 +50,16 @@ router.post('/login', async (req, res) => {
     }
 
     if (usuario.tipoUsuario === 'cliente') {
+      const cliente = await Cliente.findOne({ usuarioId: usuario._id });
+      if (!cliente) {
+        return res.status(404).send('Cliente no encontrado');
+      }
       res.redirect(`/frontend/clientes/${usuario._id}`);
     } else if (usuario.tipoUsuario === 'entrenador') {
+      const entrenador = await Entrenador.findOne({ usuarioId: usuario._id });
+      if (!entrenador) {
+        return res.status(404).send('Entrenador no encontrado');
+      }
       res.redirect(`/frontend/entrenadores/${usuario._id}`);
     } else {
       res.send('Tipo de usuario no reconocido');
@@ -68,7 +76,6 @@ router.get('/clientes/:id', async (req, res) => {
     const cliente = await Cliente.findOne({ usuarioId: req.params.id }).populate('usuarioId');
     if (!cliente) return res.status(404).send('Cliente no encontrado');
 
-    // Aquí está la corrección
     res.render('clienteDashboard', {
       nombre: cliente.usuarioId.nombre,
       idCliente: cliente._id
@@ -85,7 +92,10 @@ router.get('/entrenadores/:id', async (req, res) => {
     const entrenador = await Entrenador.findOne({ usuarioId: req.params.id }).populate('usuarioId');
     if (!entrenador) return res.status(404).send('Entrenador no encontrado');
 
-    res.render('entrenadorDashboard', { entrenador });
+    res.render('entrenadorDashboard', {
+      nombre: entrenador.usuarioId.nombre,
+      idEntrenador: entrenador._id
+    });
   } catch (error) {
     console.error('Error al cargar entrenador:', error);
     res.status(500).send('Error del servidor');

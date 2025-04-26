@@ -2,17 +2,122 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard del Cliente</title>
+    <title>Dashboard del Cliente - Gimnasio</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+            color: #fff;
+        }
+
+        header {
+            background: #1a1a2e;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #00f2fe;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0 0 0;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #00f2fe;
+            font-size: 1.2em;
+            padding: 10px 20px;
+            border: 2px solid #00f2fe;
+            border-radius: 25px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background: #00f2fe;
+            color: #1a1a2e;
+        }
+
+        .container {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+
+        .section h2 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            color: #00f2fe;
+            border-bottom: 2px solid #00f2fe;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        .section p {
+            font-size: 1.1em;
+            line-height: 1.6em;
+            color: #d3d3d3;
+        }
+
+        footer {
+            background: #0f2027;
+            text-align: center;
+            padding: 15px;
+            font-size: 0.9em;
+            color: #888;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <h1>Bienvenido, <%= nombre %>!</h1>
+        <h1>¡Bienvenido, <%= nombre %>!</h1>
         <nav>
             <ul>
                 <li><a href="/clientes/<%= idCliente %>/rutinas">Mis Rutinas</a></li>
-                <!-- Agrega más enlaces si lo deseas -->
+                <li><a href="/clientes/<%= idCliente %>/progreso">Mi Progreso</a></li>
+                <li><a href="/clientes/<%= idCliente %>/dietas">Mis Dietas</a></li>
+                <li><a href="/logout">Cerrar Sesión</a></li>
             </ul>
         </nav>
     </header>
+
+    <div class="container">
+        <div class="section">
+            <h2>Resumen de tu progreso</h2>
+            <p>Aquí podrás ver tus avances físicos, estadísticas de peso, masa muscular y mucho más.</p>
+        </div>
+
+        <div class="section">
+            <h2>Últimas Rutinas Asignadas</h2>
+            <p>Consulta las rutinas que tu entrenador te ha preparado para esta semana y mantente en forma.</p>
+        </div>
+
+        <div class="section">
+            <h2>Consejos de Nutrición</h2>
+            <p>Revisa los consejos personalizados de alimentación que hemos preparado para potenciar tus resultados.</p>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2025 GimnasioApp. Todos los derechos reservados.
+    </footer>
 </body>
 </html>

@@ -1,26 +1,29 @@
-const Cliente = require('../models/Cliente');
+const express = require('express');
+const router = express.Router();
 
-// Mostrar Dashboard del Cliente
-exports.mostrarDashboard = async (req, res) => {
+// Aquí importa cualquier middleware que vayas a usar en las rutas
+const { verificarCliente } = require('../middlewares/verificarCliente');  // Middleware de ejemplo
+
+// Ruta para obtener los datos de un cliente
+router.get('/ver', verificarCliente, (req, res) => {
     try {
-        const cliente = await Cliente.findById(req.params.id).populate('usuarioId');
-
-        if (!cliente) {
-            return res.status(404).send('Cliente no encontrado');
-        }
-
-        const usuario = cliente.usuarioId;
-        if (!usuario) {
-            return res.status(404).send('Usuario asociado no encontrado');
-        }
-
-        // Renderizar la vista y pasar los datos necesarios
-        res.render('clienteDashboard', {
-            nombre: usuario.nombre,
-            idCliente: cliente._id
-        });
+        // Lógica para obtener los datos del cliente
+        res.json({ mensaje: 'Datos del cliente obtenidos correctamente' });
     } catch (error) {
-        console.error('Error al mostrar el dashboard:', error);
-        res.status(500).send('Error en el servidor');
+        console.error('Error al obtener los datos del cliente:', error);
+        res.status(500).json({ error: 'Error del servidor al obtener los datos' });
     }
-};
+});
+
+// Ruta para actualizar los datos de un cliente
+router.put('/actualizar', verificarCliente, (req, res) => {
+    try {
+        // Lógica para actualizar los datos del cliente
+        res.json({ mensaje: 'Datos del cliente actualizados correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar los datos del cliente:', error);
+        res.status(500).json({ error: 'Error del servidor al actualizar los datos' });
+    }
+});
+
+module.exports = router;

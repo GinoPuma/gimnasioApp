@@ -68,7 +68,11 @@ router.get('/clientes/:id', async (req, res) => {
     const cliente = await Cliente.findOne({ usuarioId: req.params.id }).populate('usuarioId');
     if (!cliente) return res.status(404).send('Cliente no encontrado');
 
-    res.render('clienteDashboard', { cliente });
+    // Aquí está la corrección
+    res.render('clienteDashboard', {
+      nombre: cliente.usuarioId.nombre,
+      idCliente: cliente._id
+    });
   } catch (error) {
     console.error('Error al cargar cliente:', error);
     res.status(500).send('Error del servidor');

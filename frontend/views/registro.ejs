@@ -40,6 +40,7 @@
     <div class="form-container">
         <h1>Registro de Usuario</h1>
         <form action="/frontend/registro" method="POST">
+            <!-- Campos comunes -->
             <div class="form-group">
                 <label for="nombre">Nombre</label>
                 <input type="text" class="form-control" id="nombre" name="nombre" required>
@@ -67,6 +68,7 @@
             <div class="form-group">
                 <label for="genero">Género</label>
                 <select class="form-control" id="genero" name="genero" required>
+                    <option value="">Seleccione</option>
                     <option value="masculino">Masculino</option>
                     <option value="femenino">Femenino</option>
                 </select>
@@ -74,23 +76,50 @@
             <div class="form-group">
                 <label for="tipoUsuario">Tipo de Usuario</label>
                 <select class="form-control" id="tipoUsuario" name="tipoUsuario" required>
+                    <option value="">Seleccione</option>
                     <option value="cliente">Cliente</option>
                     <option value="entrenador">Entrenador</option>
                 </select>
             </div>
-            <h3>Si eres cliente, llena también estos campos:</h3>
-            <div class="form-group">
-                <label for="objetivo">Objetivo</label>
-                <input type="text" class="form-control" id="objetivo" name="objetivo">
+
+            <!-- Campos específicos de Cliente -->
+            <div id="camposCliente" style="display: none;">
+                <h3>Datos de Cliente</h3>
+                <div class="form-group">
+                    <label for="objetivo">Objetivo</label>
+                    <input type="text" class="form-control" id="objetivo" name="objetivo">
+                </div>
+                <div class="form-group">
+                    <label for="nivel">Nivel</label>
+                    <input type="text" class="form-control" id="nivel" name="nivel">
+                </div>
+                <div class="form-group">
+                    <label for="observaciones">Observaciones</label>
+                    <textarea class="form-control" id="observaciones" name="observaciones"></textarea>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="nivel">Nivel</label>
-                <input type="text" class="form-control" id="nivel" name="nivel">
+
+            <!-- Campos específicos de Entrenador -->
+            <div id="camposEntrenador" style="display: none;">
+                <h3>Datos de Entrenador</h3>
+                <div class="form-group">
+                    <label for="especialidad">Especialidad</label>
+                    <input type="text" class="form-control" id="especialidad" name="especialidad">
+                </div>
+                <div class="form-group">
+                    <label for="certificaciones">Certificaciones (separadas por coma)</label>
+                    <input type="text" class="form-control" id="certificaciones" name="certificaciones">
+                </div>
+                <div class="form-group">
+                    <label for="experienciaAnios">Años de experiencia</label>
+                    <input type="number" class="form-control" id="experienciaAnios" name="experienciaAnios" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="descripcionPerfil">Descripción de perfil</label>
+                    <textarea class="form-control" id="descripcionPerfil" name="descripcionPerfil"></textarea>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="observaciones">Observaciones</label>
-                <textarea class="form-control" id="observaciones" name="observaciones"></textarea>
-            </div>
+
             <button type="submit" class="btn btn-primary">Registrarse</button>
         </form>
         <br>
@@ -101,6 +130,28 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Script para mostrar/ocultar campos -->
+<script>
+    const tipoUsuarioSelect = document.getElementById('tipoUsuario');
+    const camposCliente = document.getElementById('camposCliente');
+    const camposEntrenador = document.getElementById('camposEntrenador');
+
+    tipoUsuarioSelect.addEventListener('change', function() {
+        const selected = this.value;
+
+        if (selected === 'cliente') {
+            camposCliente.style.display = 'block';
+            camposEntrenador.style.display = 'none';
+        } else if (selected === 'entrenador') {
+            camposCliente.style.display = 'none';
+            camposEntrenador.style.display = 'block';
+        } else {
+            camposCliente.style.display = 'none';
+            camposEntrenador.style.display = 'none';
+        }
+    });
+</script>
 
 </body>
 </html>

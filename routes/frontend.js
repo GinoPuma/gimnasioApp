@@ -3,6 +3,7 @@ const router = express.Router();
 const Usuario = require('../models/Usuario');
 const Cliente = require('../models/Cliente');
 const Entrenador = require('../models/Entrenador');
+const usuarioService = require('../services/usuarioService')
 
 // Mostrar formulario de registro
 router.get('/registro', (req, res) => {
@@ -16,26 +17,20 @@ router.get('/login', (req, res) => {
 
 // Procesar formulario de registro
 router.post('/registro', async (req, res) => {
-  const { nombre, correo, contraseña, tipoUsuario } = req.body;
-
   try {
-    // Crear usuario
-    const nuevoUsuario = new Usuario({ nombre, correo, contraseña, tipoUsuario });
-    await nuevoUsuario.save();
-
-    // Según el tipo de usuario, crear cliente o entrenador
-    if (tipoUsuario === 'cliente') {
-      const nuevoCliente = new Cliente({ nombre, correo, usuarioId: nuevoUsuario._id });
-      await nuevoCliente.save();
-    } else if (tipoUsuario === 'entrenador') {
-      const nuevoEntrenador = new Entrenador({ nombre, correo, usuarioId: nuevoUsuario._id });
-      await nuevoEntrenador.save();
+    const usuario = await usuarioService.crearUsuario(req.body);
+    
+    // Redirigir según tipo de usuario
+    if (usuario.tipoUsuario === 'cliente') {
+      res.redirect('/frontend/login?registro=exitoso&tipo=cliente');
+    } else if (usuario.tipoUsuario === 'entrenador') {
+      res.redirect('/frontend/login?registro=exitoso&tipo=entrenador');
+    } else {
+      res.redirect('/frontend/registro?error=tipo_invalido');
     }
-
-    res.redirect('/frontend/login');
   } catch (error) {
     console.error('Error al registrar:', error);
-    res.status(500).send('Error al registrar');
+    res.redirect('/frontend/registro?error=registro_fallido');
   }
 });
 

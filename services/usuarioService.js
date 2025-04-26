@@ -1,4 +1,5 @@
 const Usuario = require('../models/Usuario');
+const Cliente = require('../models/Cliente');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -6,11 +7,23 @@ class UsuarioService {
     constructor() {}
 
     async crearUsuario(datosUsuario) {
+        console.log('Datos recibidos para crear usuario',  datosUsuario)
         if (!datosUsuario.contrasenia) throw new Error('La contraseña es obligatoria');
 
         datosUsuario.contrasenia = await bcrypt.hash(datosUsuario.contrasenia, 10);
         const usuario = new Usuario(datosUsuario);
-        return await usuario.save();
+        const usuarioGuardado = await usuario.save();
+
+        if (usuarioGuardado.tipoUsuario === 'cliente'){
+            const datosCliente = {
+                objetivo: datosUsuario.objetivo,
+                nivel: datosUsuario.nivel,
+                observaciones: datosUsuario.observaciones
+            };
+            await Cliente.create({ usuarioId: usuarioGuardado._id, ...datosCliente})
+        }
+        console.log('Usuario creado:', usuarioGuardado)
+        return usuarioGuardado;
     }
 
     async loginUsuario(correo, contrasenia) {

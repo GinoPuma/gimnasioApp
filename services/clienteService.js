@@ -9,8 +9,8 @@ class ClienteService {
         return await Cliente.findOne({ usuarioId }).populate('usuarioId');
     }
 
-    async obtenerAllCliente(){
-        return await Cliente.find()
+    async obtenerAllCliente() {
+        return await Cliente.find();
     }
 }
 

@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 class UsuarioService {
     constructor() {}
 
-    // **Crear usuario**
     async crearUsuario(datosUsuario) {
         if (!datosUsuario.contrasenia) throw new Error('La contraseña es obligatoria');
 
@@ -14,7 +13,6 @@ class UsuarioService {
         return await usuario.save();
     }
 
-    // **Login de usuario**
     async loginUsuario(correo, contrasenia) {
         const usuario = await Usuario.findOne({ correo });
         if (!usuario) throw new Error('Usuario no encontrado');
@@ -26,12 +24,10 @@ class UsuarioService {
         return { mensaje: 'Login exitoso', token };
     }
 
-    // **Obtener todos los usuarios**
     async obtenerUsuarios() {
         return await Usuario.find();
     }
 
-    // **Actualizar usuario**
     async actualizarUsuario(id, datosActualizados) {
         const usuario = await Usuario.findById(id);
         if (!usuario) throw new Error('Usuario no encontrado');
@@ -39,7 +35,6 @@ class UsuarioService {
         return await Usuario.findByIdAndUpdate(id, datosActualizados, { new: true });
     }
 
-    // **Eliminar usuario (Soft Delete)**
     async eliminarUsuario(id) {
         const usuario = await Usuario.findById(id);
         if (!usuario) throw new Error('Usuario no encontrado');
@@ -47,7 +42,6 @@ class UsuarioService {
         return await Usuario.findByIdAndUpdate(id, { estado: 'inactivo' }, { new: true });
     }
 
-    // **Obtener perfil de usuario**
     async obtenerPerfil(id) {
         return await Usuario.findById(id);
     }

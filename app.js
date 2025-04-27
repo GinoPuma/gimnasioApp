@@ -11,13 +11,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());  // Para procesar datos JSON
 app.use(express.urlencoded({ extended: true }));  // Para procesar datos de formularios (x-www-form-urlencoded)
+// Servir solo frontend/public como archivos estáticos
 
 // Configuración de vistas con EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'frontend/views'));
 
 // Servir archivos estáticos (CSS, imágenes, JS de frontend)
-app.use(express.static(path.join(__dirname, 'frontend')));
+app.use(express.static(path.join(__dirname, 'frontend/public')));
+app.get('/', (req, res) => {
+    res.render('login');  // Renderiza la vista de login (login.ejs)
+});
+
 
 // Rutas de la API
 app.use('/api/usuarios', require('./routes/usuarios'));

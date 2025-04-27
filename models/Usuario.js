@@ -13,4 +13,4 @@ const usuarioSchema = new mongoose.Schema({
     estado: { type: String, default: "activo" }
 })
 
-module.exports = mongoose.model('usuarios', usuarioSchema);
+module.exports = mongoose.model('usuarios', usuarioSchema); 

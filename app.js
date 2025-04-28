@@ -48,11 +48,7 @@ app.get('/dietas/:id/dietas', async (req, res) => {
 app.get('/mientrenador/:id/entrenador', async (req, res) => {
     const entrenadorId = req.params.id;
     try {
-        // Aquí iría tu lógica para obtener los datos del entrenador desde la base de datos
-        // Si usas un modelo de base de datos, podrías hacer algo como:
-        // const entrenador = await Entrenador.findById(entrenadorId);
-
-        // Simulamos que ya tenemos los datos del entrenador
+       
         const entrenador = {
             id: entrenadorId,
             nombre: 'Juan Pérez',  // Esto lo sacarías de la base de datos

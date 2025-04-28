@@ -1,20 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const Dieta = require('../models/Dieta');
+const dietaController = require('../controllers/dietaController');
 
-router.post('/', async (req, res) => {
-  try {
-    const dieta = new Dieta(req.body);
-    await dieta.save();
-    res.status(201).json(dieta);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-router.get('/', async (req, res) => {
-  const dietas = await Dieta.find().populate('clienteId entrenadorId');
-  res.json(dietas);
-});
+router.post('/crear', (req, res) => dietaController.crearDieta(req, res));
+router.put('/asignar', (req, res) => dietaController.asignarDieta(req, res));
+router.get('/:id', (req, res) => dietaController.obtenerDieta(req, res));
+router.get('/', (req, res) => dietaController.listarDietas(req, res));
+router.delete('/:id', (req, res) => dietaController.eliminarDieta(req, res));
 
 module.exports = router;

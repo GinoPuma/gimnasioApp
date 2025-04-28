@@ -1,19 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Ejercicio = require('../models/Ejercicio');
-router.post('/', async (req, res) => {
-  try {
-    const ejercicio = new Ejercicio(req.body);
-    await ejercicio.save();
-    res.status(201).json(ejercicio);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+const ejercicioController = require('../controllers/ejercicioController');
 
-router.get('/', async (req, res) => {
-  const ejercicios = await Ejercicio.find();
-  res.json(ejercicios);
-});
+router.post('/crear', (req, res) => ejercicioController.crearEjercicio(req, res));
+router.get('/', (req, res) => ejercicioController.listarEjercicios(req, res));
+router.delete('/:id', (req, res) => ejercicioController.eliminarEjercicio(req, res));
 
 module.exports = router;

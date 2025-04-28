@@ -1,20 +1,41 @@
-const ProgresoFisico = require('../models/ProgresoFisico');
+const progresoFisicoService = require('../services/progresoFisicoService');
 
-exports.registrarProgreso = async (req, res) => {
-  try {
-    const progreso = new ProgresoFisico(req.body);
-    await progreso.save();
-    res.status(201).json(progreso);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+class ProgresoFisicoController {
+    async registrarProgreso(req, res) {
+        try {
+            const nuevoProgreso = await progresoFisicoService.registrarProgreso(req.body);
+            res.status(201).json(nuevoProgreso);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
 
-exports.obtenerProgresos = async (req, res) => {
-  try {
-    const progresos = await ProgresoFisico.find().populate('clienteId');
-    res.json(progresos);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+    async obtenerProgreso(req, res) {
+        try {
+            const progreso = await progresoFisicoService.obtenerProgreso(req.params.id);
+            res.json(progreso);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    async listarProgresos(req, res) {
+        try {
+            const progresos = await progresoFisicoService.listarProgresos();
+            res.json(progresos);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    async eliminarProgreso(req, res) {
+        try {
+            await progresoFisicoService.eliminarProgreso(req.params.id);
+            res.status(204).send();
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+}
+
+module.exports = new ProgresoFisicoController();

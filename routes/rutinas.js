@@ -1,19 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const Rutina = require('../models/Rutina');
-router.post('/', async (req, res) => {
-  try {
-    const rutina = new Rutina(req.body);
-    await rutina.save();
-    res.status(201).json(rutina);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+const rutinaController = require('../controllers/rutinaController');
 
-router.get('/', async (req, res) => {
-  const rutinas = await Rutina.find().populate('clienteId entrenadorId');
-  res.json(rutinas);
-});
+router.post('/crear', (req, res) => rutinaController.crearRutina(req, res));
+router.put('/asignar', (req, res) => rutinaController.asignarRutina(req, res));
+router.get('/:id', (req, res) => rutinaController.obtenerRutina(req, res));
+router.get('/', (req, res) => rutinaController.listarRutinas(req, res));
+router.delete('/:id', (req, res) => rutinaController.eliminarRutina(req, res));
 
 module.exports = router;

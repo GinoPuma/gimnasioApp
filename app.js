@@ -27,6 +27,44 @@ app.get('/', (req, res) => {
     res.render('login'); 
 });
 
+// Ruta para Dietas
+app.get('/dietas/:id/dietas', async (req, res) => {
+    const entrenadorId = req.params.id;
+    try {
+        // Aquí iría tu lógica para obtener las dietas asociadas al entrenador desde la base de datos
+        // Simulamos que tenemos las dietas del entrenador
+        const dietas = [
+            { nombre: 'Dieta A', descripcion: 'Descripción de la dieta A' },
+            { nombre: 'Dieta B', descripcion: 'Descripción de la dieta B' }
+        ];
+
+        res.render('dietas', { dietas, entrenadorId });  // Pasa las dietas a la vista
+    } catch (error) {
+        res.status(500).send('Error cargando las dietas: ' + error.message);
+    }
+});
+
+// Ruta para el perfil del entrenador
+app.get('/mientrenador/:id/entrenador', async (req, res) => {
+    const entrenadorId = req.params.id;
+    try {
+        // Aquí iría tu lógica para obtener los datos del entrenador desde la base de datos
+        // Si usas un modelo de base de datos, podrías hacer algo como:
+        // const entrenador = await Entrenador.findById(entrenadorId);
+
+        // Simulamos que ya tenemos los datos del entrenador
+        const entrenador = {
+            id: entrenadorId,
+            nombre: 'Juan Pérez',  // Esto lo sacarías de la base de datos
+            especialidad: 'Entrenador de fuerza', // Datos de ejemplo
+        };
+
+        res.render('mientrenador', { entrenador });  // Pasamos los datos a la vista
+    } catch (error) {
+        res.status(500).send('Error cargando el perfil del entrenador: ' + error.message);
+    }
+});
+
 // Ruta corregida para ejercicios
 app.get('/ejercicios', async (req, res) => {
     try {

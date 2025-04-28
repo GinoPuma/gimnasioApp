@@ -1,5 +1,6 @@
 const Usuario = require('../models/Usuario');
 const Cliente = require('../models/Cliente');
+const Entrenador = require('../models/Entrenador')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -21,6 +22,16 @@ class UsuarioService {
                 observaciones: datosUsuario.observaciones
             };
             await Cliente.create({ usuarioId: usuarioGuardado._id, ...datosCliente})
+        }
+
+        if (usuarioGuardado.tipoUsuario === 'entrenador'){
+            const datosEntrenador = {
+                especialidad: datosUsuario.especialidad,
+                certificaciones: datosUsuario.certificaciones,
+                experienciaAnios: datosUsuario.experienciaAnios,
+                descripcionPerfil: datosUsuario.descripcionPerfil
+            };
+            await Entrenador.create({ usuarioId: usuarioGuardado._id, ...datosEntrenador})
         }
         console.log('Usuario creado:', usuarioGuardado)
         return usuarioGuardado;

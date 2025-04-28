@@ -4,6 +4,9 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
+// Importar el modelo o servicio de ejercicios
+const ejercicioService = require('./services/ejercicioService'); // Asegúrate que exista este archivo
+
 // Inicializar Express
 const app = express();
 
@@ -19,12 +22,21 @@ app.set('views', path.join(__dirname, 'frontend/views'));
 // Servir archivos estáticos (CSS, imágenes, JS de frontend)
 app.use(express.static(path.join(__dirname, 'frontend/public')));
 
+// Rutas de las vistas
 app.get('/', (req, res) => {
     res.render('login'); 
 });
-app.get('/ejercicios', (req, res) => {
-    res.render('ejercicios', { clienteId: req.user ? req.user.id : 'Invitado' });
+
+// Ruta corregida para ejercicios
+app.get('/ejercicios', async (req, res) => {
+    try {
+        const ejercicios = await ejercicioService.listarEjercicios(); // Obtener todos los ejercicios
+        res.render('ejercicios', { ejercicios, clienteId: req.user ? req.user.id : 'Invitado' });
+    } catch (error) {
+        res.status(500).send('Error cargando ejercicios: ' + error.message);
+    }
 });
+
 // Rutas de la API
 app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/clientes', require('./routes/cliente'));

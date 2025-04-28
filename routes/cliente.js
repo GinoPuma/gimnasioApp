@@ -1,9 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { verificarCliente } = require('../middlewares/verificarClienteMiddlewars')
-const clienteController = require('../controllers/clienteController')
+const { verificarCliente } = require('../middlewares/verificarClienteMiddlewars');
+const clienteController = require('../controllers/clienteController');
 
-router.get('/ver', verificarCliente, clienteController.obtenerCliente)
-router.put('/actualizar', verificarCliente, clienteController.actualizarCliente)
+// Ruta existente para obtener y actualizar el cliente
+router.get('/ver', verificarCliente, clienteController.obtenerCliente);
+router.put('/actualizar', verificarCliente, clienteController.actualizarCliente);
+
+// Ruta para acceder a la página de ejercicios (sin id ni parámetros adicionales)
+router.get('/ejercicios', verificarCliente, (req, res) => {
+    res.render('ejercicios');  // Renderiza la vista 'ejercicios.ejs'
+});
 
 module.exports = router;

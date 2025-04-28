@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicios</title>
+    <link rel="stylesheet" href="/frontend/public/css/ejercicios.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Ejercicios del cliente: <%= clienteId %></h1> <!-- Muestra el id del cliente -->
+        <form action="/api/ejercicios" method="POST">
+            <div>
+                <label for="nombre">Nombre del ejercicio:</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+            <div>
+                <label for="categoria">Categoría:</label>
+                <input type="text" id="categoria" name="categoria" required>
+            </div>
+            <div>
+                <label for="descripcion">Descripción:</label>
+                <textarea id="descripcion" name="descripcion" required></textarea>
+            </div>
+            <div>
+                <label for="nivel">Nivel de dificultad:</label>
+                <input type="text" id="nivel" name="nivel" required>
+            </div>
+            <button type="submit">Agregar Ejercicio</button>
+        </form>
+    </div>
+
+    <script src="/frontend/public/js/ejercicios.js"></script>
+</body>
+</html>

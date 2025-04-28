@@ -18,6 +18,7 @@ app.set('views', path.join(__dirname, 'frontend/views'));
 
 // Servir archivos estáticos (CSS, imágenes, JS de frontend)
 app.use(express.static(path.join(__dirname, 'frontend/public')));
+
 app.get('/', (req, res) => {
     res.render('login');  // Renderiza la vista de login (login.ejs)
 });
@@ -32,7 +33,6 @@ app.use('/api/progresos', require('./routes/progreso'));
 app.use('/api/dietas', require('./routes/dietas'));
 app.use('/api/mensajes', require('./routes/mensajes'));
 app.use('/', require('./routes/login'));
-
 app.use('/frontend', require('./routes/frontend'));
 
 // Puerto de escucha

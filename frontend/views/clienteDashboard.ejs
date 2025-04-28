@@ -1,123 +1,118 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard del Cliente - Gimnasio</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-            color: #fff;
-        }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard del Cliente - GimnasioApp</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/clientDashboard.css">
 
-        header {
-            background: #1a1a2e;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-
-        header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            color: #00f2fe;
-        }
-
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 20px 0 0 0;
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-        }
-
-        nav ul li a {
-            text-decoration: none;
-            color: #00f2fe;
-            font-size: 1.2em;
-            padding: 10px 20px;
-            border: 2px solid #00f2fe;
-            border-radius: 25px;
-            transition: background 0.3s, color 0.3s;
-        }
-
-        nav ul li a:hover {
-            background: #00f2fe;
-            color: #1a1a2e;
-        }
-
-        .container {
-            padding: 40px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .section {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-        }
-
-        .section h2 {
-            font-size: 1.8em;
-            margin-bottom: 15px;
-            color: #00f2fe;
-            border-bottom: 2px solid #00f2fe;
-            display: inline-block;
-            padding-bottom: 5px;
-        }
-
-        .section p {
-            font-size: 1.1em;
-            line-height: 1.6em;
-            color: #d3d3d3;
-        }
-
-        footer {
-            background: #0f2027;
-            text-align: center;
-            padding: 15px;
-            font-size: 0.9em;
-            color: #888;
-        }
-    </style>
 </head>
+
 <body>
     <header>
-        <h1>¡Bienvenido, <%= nombre %>!</h1>
+        <h1>¡BIENVENIDO, <span class="username">
+                <%= nombre %>
+            </span>!</h1>
+        <div class="welcome-text">Tu centro de control fitness</div>
+        <div class="motivation-text">"El éxito comienza con la decisión de intentarlo. Cada entrenamiento te acerca a tu
+            mejor versión."</div>
+
         <nav>
             <ul>
-                <li><a href="/clientes/<%= idCliente %>/rutinas">Mis Rutinas</a></li>
-                <li><a href="/clientes/<%= idCliente %>/progreso">Mi Progreso</a></li>
-                <li><a href="/clientes/<%= idCliente %>/dietas">Mis Dietas</a></li>
-                <li><a href="/logout">Cerrar Sesión</a></li>
+                <li><a href="/clientes/<%= idCliente %>/rutinas"><i class="fas fa-dumbbell"></i> Mis Rutinas</a></li>
+                <li><a href="/clientes/<%= idCliente %>/progreso"><i class="fas fa-chart-line"></i> Mi Progreso</a></li>
+                <li><a href="/clientes/<%= idCliente %>/dietas"><i class="fas fa-utensils"></i> Mis Dietas</a></li>
+                <li><a href="/clientes/<%= idCliente %>/entrenador"><i class="fas fa-user-tie"></i> Mi Entrenador</a>
+                </li>
+                <li><a href="/logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
             </ul>
         </nav>
     </header>
 
     <div class="container">
-        <div class="section">
-            <h2>Resumen de tu progreso</h2>
-            <p>Aquí podrás ver tus avances físicos, estadísticas de peso, masa muscular y mucho más.</p>
-        </div>
+        <div class="dashboard-grid">
+            <div class="card progress-card">
+                <h2><i class="fas fa-trophy"></i> Tu Progreso</h2>
+                <p>Revisa tus increíbles avances y mantente motivado para alcanzar tus objetivos fitness.</p>
 
-        <div class="section">
-            <h2>Últimas Rutinas Asignadas</h2>
-            <p>Consulta las rutinas que tu entrenador te ha preparado para esta semana y mantente en forma.</p>
-        </div>
+                <div class="progress-stats">
+                    <div class="stat-item">
+                        <h3>Días consecutivos</h3>
+                        <p>12</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>Peso actual</h3>
+                        <p>75.4 kg</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>% Grasa</h3>
+                        <p>18.2%</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>IMC</h3>
+                        <p>23.1</p>
+                    </div>
+                </div>
 
-        <div class="section">
-            <h2>Consejos de Nutrición</h2>
-            <p>Revisa los consejos personalizados de alimentación que hemos preparado para potenciar tus resultados.</p>
+                <a href="/clientes/<%= idCliente %>/progreso" class="btn"
+                    style="margin-top: 20px; align-self: flex-start;">
+                    Ver detalles completos
+                </a>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-dumbbell"></i> Rutina Actual</h2>
+                <p>Tu entrenador ha preparado una rutina especial para esta semana enfocada en fuerza y resistencia.</p>
+                <p><strong>Próxima sesión:</strong> Piernas y Core - Hoy 18:00</p>
+                <a href="/clientes/<%= idCliente %>/rutinas" class="btn">Ver rutina completa</a>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-utensils"></i> Plan Nutricional</h2>
+                <p>Consulta las recomendaciones alimenticias personalizadas para potenciar tus resultados esta semana.
+                </p>
+                <p><strong>Enfoque:</strong> Aumento masa muscular</p>
+                <a href="/clientes/<%= idCliente %>/dietas" class="btn">Ver plan alimenticio</a>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-calendar-check"></i> Próximas Citas</h2>
+                <p><strong>Evaluación física:</strong> 15/06/2025</p>
+                <p><strong>Sesión con entrenador:</strong> Mañana 10:00</p>
+                <a href="/clientes/<%= idCliente %>/citas" class="btn">Gestionar citas</a>
+            </div>
+
+            <div class="card motivational-card">
+                <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                <h2>¡Tú puedes!</h2>
+                <p>"El dolor que sientes hoy será la fuerza que sentirás mañana. Cada gota de sudor es una inversión en
+                    tu futuro."</p>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-award"></i> Logros</h2>
+                <p>Has completado 8 rutinas este mes y estás en el top 20% de los clientes más consistentes.</p>
+                <a href="/clientes/<%= idCliente %>/logros" class="btn">Ver todos mis logros</a>
+            </div>
         </div>
     </div>
 
     <footer>
-        &copy; 2025 GimnasioApp. Todos los derechos reservados.
+        <div class="social-links">
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+        </div>
+        <p>&copy; 2025 GimnasioApp. Todos los derechos reservados.</p>
+        <p>Transformando vidas a través del fitness</p>
     </footer>
+    <script src="js/clientDashboard.js"></script>
 </body>
+
 </html>

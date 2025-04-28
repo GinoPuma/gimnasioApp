@@ -20,9 +20,11 @@ app.set('views', path.join(__dirname, 'frontend/views'));
 app.use(express.static(path.join(__dirname, 'frontend/public')));
 
 app.get('/', (req, res) => {
-    res.render('login');  // Renderiza la vista de login (login.ejs)
+    res.render('login'); 
 });
-
+app.get('/ejercicios', (req, res) => {
+    res.render('ejercicios', { clienteId: req.user ? req.user.id : 'Invitado' });
+});
 // Rutas de la API
 app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/clientes', require('./routes/cliente'));
@@ -32,7 +34,6 @@ app.use('/api/rutinas', require('./routes/rutinas'));
 app.use('/api/progresos', require('./routes/progreso'));
 app.use('/api/dietas', require('./routes/dietas'));
 app.use('/api/mensajes', require('./routes/mensajes'));
-app.use('/', require('./routes/login'));
 app.use('/frontend', require('./routes/frontend'));
 
 // Puerto de escucha

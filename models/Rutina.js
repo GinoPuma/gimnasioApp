@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const rutinaSchema = new mongoose.Schema({
-    clienteId: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente' },
-    entrenadorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Entrenador' },
+    clienteId: { type: mongoose.Schema.Types.ObjectId, ref: 'clientes' },
+    entrenadorId: { type: mongoose.Schema.Types.ObjectId, ref: 'entrenadores' },
     nombre: String,
     descripcion: String,
     duracionSemanas: Number,

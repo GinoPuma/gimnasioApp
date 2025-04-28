@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const entrenadorSchema = new mongoose.Schema({
-    usuarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'usuarios', required: true },  // Cambié 'Usuario' por 'usuarios'
+    usuarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'usuarios', required: true },
     especialidad: String,
     certificaciones: [String],
     experienciaAnios: Number,

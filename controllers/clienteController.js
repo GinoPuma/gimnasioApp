@@ -1,29 +1,33 @@
 const express = require('express');
-const router = express.Router();
+const ClienteService = require('../services/clienteService')
 
-// Aquí importa cualquier middleware que vayas a usar en las rutas
-const { verificarCliente } = require('../middlewares/verificarCliente');  // Middleware de ejemplo
-
-// Ruta para obtener los datos de un cliente
-router.get('/ver', verificarCliente, (req, res) => {
+exports.obtenerCliente = async (req, res) => {
     try {
-        // Lógica para obtener los datos del cliente
-        res.json({ mensaje: 'Datos del cliente obtenidos correctamente' });
+        const cliente = await ClienteService.obtenerClientePorUsuario(req.user.id);
+        if (!cliente) {
+            return res.status(404).json({ error: 'Cliente no encontrado' });
+        }
+        res.json(cliente);
     } catch (error) {
-        console.error('Error al obtener los datos del cliente:', error);
-        res.status(500).json({ error: 'Error del servidor al obtener los datos' });
+        console.error('Error al obtener los datos del cliente:', error.message);
+        res.status(500).json({ error: 'Error del servidor' });
     }
-});
+};
 
-// Ruta para actualizar los datos de un cliente
-router.put('/actualizar', verificarCliente, (req, res) => {
+exports.actualizarCliente = async (req, res) => {
     try {
-        // Lógica para actualizar los datos del cliente
+        const usuarioId = req.user.id;
+        const datosActualizados = req.body;
+
+        const clienteActualizado = await ClienteService.actualizarCliente(usuarioId, datosActualizados);
+
+        if(!clienteActualizado){
+            return res.status(404).json({ error:'Cliente no encontrado' })
+        }
         res.json({ mensaje: 'Datos del cliente actualizados correctamente' });
     } catch (error) {
-        console.error('Error al actualizar los datos del cliente:', error);
-        res.status(500).json({ error: 'Error del servidor al actualizar los datos' });
+        console.error('Error al actualizar los datos del cliente:', error.message);
+        res.status(500).json({ error: 'Error del servidor' });
     }
-});
+};
 
-module.exports = router;

@@ -1,20 +1,35 @@
-const Entrenador = require('../models/Entrenador');
+const express = require('express');
+const EntrenadorService = require('../services/entrenadorService')
 
-exports.crearEntrenador = async (req, res) => {
+exports.obtenerEntrenador = async (req, res) => {
   try {
-    const entrenador = new Entrenador(req.body);
-    await entrenador.save();
-    res.status(201).json(entrenador);
+      const entrenador = await EntrenadorService.obtenerEntrenadorPorUsuario(req.user.id);
+      if (!entrenador) {
+        return res.status(404).json({ error:'Entrenador no encontrado' })
+      }
+      res.json(entrenador);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+      console.error('Error al obtener los datos del entrenador:', error.message);
+      res.status(500).json({ error: 'Error del servidor' });
   }
-};
+}
 
-exports.obtenerEntrenadores = async (req, res) => {
+
+exports.actualizarEntrenador = async (req, res) => {
   try {
-    const entrenadores = await Entrenador.find().populate('usuarioId');
-    res.json(entrenadores);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+      const usuarioId = req.user.id;
+      const datosActualizados = req.body;
+
+      const entrenadorActualizado = await EntrenadorService.actualizarEntrenador(usuarioId, datosActualizados);
+      
+      if(!entrenadorActualizado){
+        return res.status(404).json({ error:'Entrenador no encontrado' });
+      }
+
+      res.json({ mensaje: 'Datos del entrenador actualizados correctamente'})
+
+  } catch (error) {
+      console.error('Error al actualizar los datos del entranador')
+      res.status(500).json({ error: 'Error del servidor' });
   }
 };

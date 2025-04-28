@@ -12,6 +12,14 @@ class ClienteService {
     async obtenerAllCliente() {
         return await Cliente.find();
     }
+
+    async actualizarCliente(usuarioId, datosActualizados){
+        return await Cliente.findOneAndUpdate(
+            { usuarioId },
+            { $set: datosActualizados },
+            { new: true, runValidators: true }
+        );
+    }
 }
 
 module.exports = new ClienteService();

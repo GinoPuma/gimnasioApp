@@ -2,6 +2,7 @@ const express = require('express');
 const connection = require('./database/connection');
 const cors = require('cors');
 const path = require('path');
+const session = require('express-session');
 require('dotenv').config();
 
 // Importar el modelo o servicio de ejercicios
@@ -14,6 +15,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());  // Para procesar datos JSON
 app.use(express.urlencoded({ extended: true }));  // Para procesar datos de formularios (x-www-form-urlencoded)
+
+// Configuración de sesiones
+app.use(session({
+    secret: 'gimnasioAppSecretKey',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 horas
+}));
+
+// Middleware para pasar datos de sesión a las vistas
+app.use((req, res, next) => {
+    res.locals.usuario = req.session.usuario || null;
+    next();
+});
 
 // Configuración de vistas con EJS
 app.set('view engine', 'ejs');
@@ -81,6 +96,12 @@ app.use('/api/progresos', require('./routes/progreso'));
 app.use('/api/dietas', require('./routes/dietas'));
 app.use('/api/mensajes', require('./routes/mensajes'));
 app.use('/frontend', require('./routes/frontend'));
+
+// Ruta para manejar las rutinas en la interfaz de usuario
+app.use('/rutinas', require('./routes/rutinas'));
+
+// Rutas para el panel de administración
+app.use('/admin', require('./routes/admin'));
 
 // Puerto de escucha
 app.listen(3000, () => {

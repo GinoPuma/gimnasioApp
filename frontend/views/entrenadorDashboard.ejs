@@ -687,34 +687,64 @@
                                 </div>
                                 <div class="card-body d-flex align-items-center justify-content-center">
                                     <div class="form-container w-100">
-                                        <form>
+                                        <form id="nuevaRutinaForm" action="/rutinas/crear" method="POST" onsubmit="return crearNuevaRutina(event)">
+                                            <input type="hidden" name="entrenadorId" value="<%= idEntrenador %>">
                                             <div class="mb-3">
-                                                <label for="routineName" class="form-label">Nombre de la Rutina</label>
-                                                <input type="text" class="form-control" id="routineName" placeholder="Ej: Rutina Piernas Avanzada">
+                                                <label for="nombre" class="form-label">Nombre de la Rutina</label>
+                                                <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ej: Rutina Piernas Avanzada" required>
                                             </div>
                                             <div class="mb-3">
-                                                <label for="routineType" class="form-label">Tipo de Rutina</label>
-                                                <select class="form-select" id="routineType">
-                                                    <option selected disabled>Seleccione un tipo</option>
-                                                    <option>Fuerza</option>
-                                                    <option>Hipertrofia</option>
-                                                    <option>Resistencia</option>
-                                                    <option>Cardio</option>
-                                                    <option>Flexibilidad</option>
+                                                <label for="descripcion" class="form-label">Descripción</label>
+                                                <textarea class="form-control" id="descripcion" name="descripcion" rows="2" placeholder="Breve descripción de la rutina"></textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="duracionSemanas" class="form-label">Duración (semanas)</label>
+                                                <input type="number" class="form-control" id="duracionSemanas" name="duracionSemanas" min="1" max="52" value="4" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="fechaInicio" class="form-label">Fecha de inicio</label>
+                                                <input type="date" class="form-control" id="fechaInicio" name="fechaInicio" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="estado" class="form-label">Estado</label>
+                                                <select class="form-select" id="estado" name="estado" required>
+                                                    <option value="Activa">Activa</option>
+                                                    <option value="Inactiva">Inactiva</option>
+                                                    <option value="Borrador">Borrador</option>
                                                 </select>
                                             </div>
                                             <div class="mb-3">
-                                                <label for="routineLevel" class="form-label">Nivel</label>
-                                                <select class="form-select" id="routineLevel">
-                                                    <option selected disabled>Seleccione nivel</option>
-                                                    <option>Principiante</option>
-                                                    <option>Intermedio</option>
-                                                    <option>Avanzado</option>
-                                                </select>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="routineDays" class="form-label">Días por semana</label>
-                                                <input type="number" class="form-control" id="routineDays" min="1" max="7" value="3">
+                                                <label class="form-label">Días de entrenamiento</label>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-lunes" name="diasSemana[]" value="Lunes">
+                                                        <label class="form-check-label" for="dia-lunes">Lunes</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-martes" name="diasSemana[]" value="Martes">
+                                                        <label class="form-check-label" for="dia-martes">Martes</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-miercoles" name="diasSemana[]" value="Miércoles">
+                                                        <label class="form-check-label" for="dia-miercoles">Miércoles</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-jueves" name="diasSemana[]" value="Jueves">
+                                                        <label class="form-check-label" for="dia-jueves">Jueves</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-viernes" name="diasSemana[]" value="Viernes">
+                                                        <label class="form-check-label" for="dia-viernes">Viernes</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-sabado" name="diasSemana[]" value="Sábado">
+                                                        <label class="form-check-label" for="dia-sabado">Sábado</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-domingo" name="diasSemana[]" value="Domingo">
+                                                        <label class="form-check-label" for="dia-domingo">Domingo</label>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <button type="submit" class="btn btn-primary w-100">Crear Rutina</button>
                                         </form>
@@ -727,7 +757,7 @@
                                 <div class="card-header">
                                     <span><i class="fas fa-dumbbell me-2"></i>Mis Rutinas</span>
                                     <div class="input-group" style="width: 250px;">
-                                        <input type="text" class="form-control" placeholder="Buscar rutina...">
+                                        <input type="text" class="form-control" id="buscarRutina" placeholder="Buscar rutina...">
                                         <button class="btn btn-outline-secondary" type="button"><i class="fas fa-search"></i></button>
                                     </div>
                                 </div>
@@ -737,47 +767,38 @@
                                             <thead>
                                                 <tr>
                                                     <th>Nombre</th>
-                                                    <th>Tipo</th>
-                                                    <th>Nivel</th>
-                                                    <th>Días/Sem</th>
-                                                    <th>Clientes</th>
+                                                    <th>Descripción</th>
+                                                    <th>Duración</th>
+                                                    <th>Fecha Inicio</th>
+                                                    <th>Estado</th>
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Rutina Full Body</td>
-                                                    <td><span class="badge badge-custom badge-primary">Fuerza</span></td>
-                                                    <td>Intermedio</td>
-                                                    <td>3</td>
-                                                    <td>12</td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-primary me-2">Ver</button>
-                                                        <button class="btn btn-sm btn-success">Asignar</button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Cardio Intenso</td>
-                                                    <td><span class="badge badge-custom badge-success">Cardio</span></td>
-                                                    <td>Avanzado</td>
-                                                    <td>4</td>
-                                                    <td>8</td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-primary me-2">Ver</button>
-                                                        <button class="btn btn-sm btn-success">Asignar</button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Principiantes Gym</td>
-                                                    <td><span class="badge badge-custom badge-warning">Hipertrofia</span></td>
-                                                    <td>Principiante</td>
-                                                    <td>2</td>
-                                                    <td>5</td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-primary me-2">Ver</button>
-                                                        <button class="btn btn-sm btn-success">Asignar</button>
-                                                    </td>
-                                                </tr>
+                                            <tbody id="rutinasTableBody">
+                                                <% if (typeof rutinas !== 'undefined' && rutinas && rutinas.length > 0) { %>
+                                                    <% rutinas.forEach(function(rutina) { %>
+                                                        <tr>
+                                                            <td><%= rutina.nombre %></td>
+                                                            <td><%= rutina.descripcion || 'Sin descripción' %></td>
+                                                            <td><%= rutina.duracionSemanas %> semanas</td>
+                                                            <td><%= rutina.fechaInicio ? new Date(rutina.fechaInicio).toLocaleDateString() : 'No definida' %></td>
+                                                            <td>
+                                                                <span class="badge badge-custom <%= rutina.estado === 'Activa' ? 'badge-success' : (rutina.estado === 'Inactiva' ? 'badge-warning' : 'badge-secondary') %>">
+                                                                    <%= rutina.estado %>
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <a href="/rutinas/<%= rutina._id %>" class="btn btn-sm btn-primary me-2 verRutinaBtn">Ver</a>
+                                                                <button class="btn btn-sm btn-success asignarRutinaBtn" data-rutina-id="<%= rutina._id %>">Asignar</button>
+                                                                <a href="/rutinas/<%= rutina._id %>/editar" class="btn btn-sm btn-warning editarRutinaBtn">Editar</a>
+                                                            </td>
+                                                        </tr>
+                                                    <% }); %>
+                                                <% } else { %>
+                                                    <tr>
+                                                        <td colspan="6" class="text-center">No hay rutinas disponibles</td>
+                                                    </tr>
+                                                <% } %>
                                             </tbody>
                                         </table>
                                     </div>
@@ -941,6 +962,235 @@
             logoutModal.show();
         });
 
+        // Función para crear una nueva rutina mediante AJAX
+        function crearNuevaRutina(event) {
+            event.preventDefault();
+            
+            // Mostrar indicador de carga
+            const submitBtn = document.querySelector('#nuevaRutinaForm button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creando...';
+            submitBtn.disabled = true;
+            
+            // Obtener los datos del formulario
+            const formData = new FormData(document.getElementById('nuevaRutinaForm'));
+            const formDataObj = {};
+            formData.forEach((value, key) => {
+                // Manejar los checkboxes de días de la semana
+                if (key === 'diasSemana[]') {
+                    if (!formDataObj.diasSemana) {
+                        formDataObj.diasSemana = [];
+                    }
+                    formDataObj.diasSemana.push(value);
+                } else {
+                    formDataObj[key] = value;
+                }
+            });
+            
+            // Enviar los datos mediante AJAX
+            fetch('/rutinas/crear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(formDataObj)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al crear la rutina');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Rutina creada:', data);
+                
+                // Mostrar mensaje de éxito
+                mostrarAlerta('Rutina creada con éxito', 'success');
+                
+                // Limpiar el formulario
+                document.getElementById('nuevaRutinaForm').reset();
+                
+                // Actualizar la tabla de rutinas
+                actualizarTablaRutinas();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarAlerta('Error al crear la rutina: ' + error.message, 'danger');
+            })
+            .finally(() => {
+                // Restaurar el botón
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            });
+            
+            return false;
+        }
+        
+        // Función para actualizar la tabla de rutinas
+        function actualizarTablaRutinas() {
+            const entrenadorId = document.querySelector('input[name="entrenadorId"]').value;
+            
+            fetch(`/rutinas?entrenadorId=${entrenadorId}`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const rutinas = data;
+                const tbody = document.getElementById('rutinasTableBody');
+                
+                // Limpiar la tabla
+                tbody.innerHTML = '';
+                
+                if (rutinas && rutinas.length > 0) {
+                    // Agregar las rutinas a la tabla
+                    rutinas.forEach(rutina => {
+                        const tr = document.createElement('tr');
+                        
+                        // Formatear la fecha
+                        const fechaInicio = rutina.fechaInicio ? new Date(rutina.fechaInicio).toLocaleDateString() : 'No definida';
+                        
+                        // Determinar la clase de la insignia de estado
+                        const estadoClass = rutina.estado === 'Activa' ? 'badge-success' : (rutina.estado === 'Inactiva' ? 'badge-warning' : 'badge-secondary');
+                        
+                        tr.innerHTML = `
+                            <td>${rutina.nombre}</td>
+                            <td>${rutina.descripcion || 'Sin descripción'}</td>
+                            <td>${rutina.duracionSemanas} semanas</td>
+                            <td>${fechaInicio}</td>
+                            <td>
+                                <span class="badge badge-custom ${estadoClass}">
+                                    ${rutina.estado}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="/rutinas/${rutina._id}" class="btn btn-sm btn-primary me-2 verRutinaBtn">Ver</a>
+                                <button class="btn btn-sm btn-success asignarRutinaBtn" data-rutina-id="${rutina._id}">Asignar</button>
+                                <a href="/rutinas/${rutina._id}/editar" class="btn btn-sm btn-warning editarRutinaBtn">Editar</a>
+                            </td>
+                        `;
+                        
+                        tbody.appendChild(tr);
+                    });
+                    
+                    // Agregar event listeners a los botones
+                    agregarEventListeners();
+                } else {
+                    // Mostrar mensaje si no hay rutinas
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center">No hay rutinas disponibles</td>
+                        </tr>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error al obtener rutinas:', error);
+                mostrarAlerta('Error al obtener rutinas: ' + error.message, 'danger');
+            });
+        }
+        
+        // Función para agregar event listeners a los botones de la tabla
+        function agregarEventListeners() {
+            // Botón de asignar rutina
+            document.querySelectorAll('.asignarRutinaBtn').forEach(btn => {
+                // Eliminar event listeners previos para evitar duplicados
+                btn.removeEventListener('click', asignarRutinaHandler);
+                btn.addEventListener('click', asignarRutinaHandler);
+            });
+        }
+        
+        // Handler para el botón de asignar rutina
+        function asignarRutinaHandler() {
+            const rutinaId = this.getAttribute('data-rutina-id');
+            mostrarModalAsignarRutina(rutinaId);
+        }
+        
+        // Función para mostrar el modal de asignar rutina
+        function mostrarModalAsignarRutina(rutinaId) {
+            // Aquí podrías implementar un modal para seleccionar el cliente
+            // Por ahora, simplemente mostraremos una alerta
+            alert('Funcionalidad de asignar rutina en desarrollo. RutinaID: ' + rutinaId);
+        }
+        
+        // Función para mostrar alertas
+        function mostrarAlerta(mensaje, tipo) {
+            // Crear el elemento de alerta
+            const alertaDiv = document.createElement('div');
+            alertaDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
+            alertaDiv.role = 'alert';
+            alertaDiv.innerHTML = `
+                ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Insertar la alerta al principio del contenedor principal
+            const mainContainer = document.querySelector('.main-container');
+            mainContainer.insertBefore(alertaDiv, mainContainer.firstChild);
+            
+            // Eliminar la alerta después de 5 segundos
+            setTimeout(() => {
+                alertaDiv.remove();
+            }, 5000);
+        }
+        
+        // Buscar rutinas - Función mejorada
+        document.getElementById('buscarRutina').addEventListener('input', function() {
+            const busqueda = this.value.toLowerCase().trim();
+            const filas = document.querySelectorAll('#rutinasTableBody tr');
+            
+            // Si la búsqueda está vacía, mostrar todas las filas
+            if (busqueda === '') {
+                filas.forEach(fila => {
+                    fila.style.display = '';
+                });
+                return;
+            }
+            
+            // Buscar en cada fila
+            filas.forEach(fila => {
+                // Obtener el texto de cada celda individualmente (excepto la última que contiene botones)
+                const celdas = Array.from(fila.querySelectorAll('td:not(:last-child)'));
+                
+                // Verificar si alguna celda contiene el texto de búsqueda
+                const coincide = celdas.some(celda => {
+                    const texto = celda.textContent.toLowerCase().trim();
+                    return texto.includes(busqueda);
+                });
+                
+                // Mostrar u ocultar la fila según el resultado
+                if (coincide) {
+                    fila.style.display = '';
+                    // Resaltar el texto que coincide
+                    celdas.forEach(celda => {
+                        const texto = celda.textContent;
+                        const textoLower = texto.toLowerCase();
+                        if (textoLower.includes(busqueda)) {
+                            const index = textoLower.indexOf(busqueda);
+                            const parteAntes = texto.substring(0, index);
+                            const parteCoincidente = texto.substring(index, index + busqueda.length);
+                            const parteDespues = texto.substring(index + busqueda.length);
+                            celda.innerHTML = `${parteAntes}<span class="highlight">${parteCoincidente}</span>${parteDespues}`;
+                        }
+                    });
+                } else {
+                    fila.style.display = 'none';
+                }
+            });
+        });
+        
+        // Agregar estilo para el resaltado
+        const style = document.createElement('style');
+        style.textContent = `
+            .highlight {
+                background-color: yellow;
+                font-weight: bold;
+            }
+        `;
+        document.head.appendChild(style);
+
         // Check if user is logged in (simulated)
         function checkAuth() {
             // In a real app, this would check cookies/session
@@ -953,13 +1203,24 @@
 
         // Check auth on page load
         checkAuth();
-
-        // Simulate session expiration (for demo purposes)
-        setTimeout(() => {
-            // sessionStorage.setItem('loggedIn', 'false');
-            // Uncomment the line above and implement proper session checking
-            // in a real application
-        }, 3600000); // 1 hour
+        
+        // Cargar rutinas al iniciar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Solo actualizar la tabla si estamos en la pestaña de rutinas
+            const rutinasTab = document.getElementById('routines-tab');
+            if (rutinasTab && rutinasTab.classList.contains('active')) {
+                actualizarTablaRutinas();
+            }
+            
+            // Actualizar la tabla cuando se haga clic en la pestaña de rutinas
+            document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function(event) {
+                    if (event.target.getAttribute('data-bs-target') === '#routines') {
+                        actualizarTablaRutinas();
+                    }
+                });
+            });
+        });
 
         // Sample chart for dashboard (would be in dashboard tab)
         if (document.getElementById('progressChart')) {

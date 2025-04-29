@@ -8,9 +8,27 @@ const usuarioSchema = new mongoose.Schema({
     telefono: String,
     fechaNacimiento: Date,
     genero: String,
-    tipoUsuario: String,
+    tipoUsuario: { 
+        type: String, 
+        enum: ['cliente', 'entrenador', 'administrador'],
+        required: true
+    },
     fechaRegistro: { type: Date, default: Date.now },
-    estado: { type: String, default: "activo" }
-})
+    estado: { 
+        type: String, 
+        enum: ['pendiente', 'activo', 'inactivo', 'bloqueado'], 
+        default: "pendiente" 
+    },
+    verificado: { type: Boolean, default: false },
+    codigoVerificacion: { 
+        codigo: String,
+        fechaCreacion: Date,
+        fechaExpiracion: Date
+    },
+    ultimoAcceso: Date,
+    intentosFallidos: { type: Number, default: 0 },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date
+}, { timestamps: true });
 
 module.exports = mongoose.model('usuarios', usuarioSchema);

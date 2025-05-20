@@ -2,24 +2,38 @@ const Entrenador = require('../models/Entrenador');
 
 exports.verificarEntrenador = async (req, res, next) => {
     try {
-        if (req.body.tipoUsuario !== 'entrenador') return next();
+        // Verificar si hay un usuario en la sesión
+        if (!req.session || !req.session.usuario) {
+            console.log('No hay sesión de usuario activa');
+            return res.redirect('/frontend/login?error=sesion_requerida');
+        }
 
-        const entrenadorExistente = await Entrenador.findOne({ usuarioId: req.usuarioId });
-        if (entrenadorExistente) return next();
+        // Obtener el ID del usuario de la sesión
+        const usuarioId = req.session.usuario._id;
+        console.log('Verificando entrenador para usuario:', usuarioId);
 
-        const nuevoEntrenador = new Entrenador({
-            usuarioId: req.usuarioId,
-            especialidad: req.body.especialidad || '',
-            certificaciones: req.body.certificaciones || [],
-            experienciaAnios: req.body.experienciaAnios || 0,
-            descripcionPerfil: req.body.descripcionPerfil || ''
-        });
-        await nuevoEntrenador.save();
+        // Buscar el entrenador asociado al usuario
+        const entrenadorExistente = await Entrenador.findOne({ usuarioId });
+        
+        if (!entrenadorExistente) {
+            console.error('No se encontró el perfil de entrenador para el usuario:', usuarioId);
+            return res.redirect('/frontend/login?error=perfil_no_encontrado');
+        }
 
-        console.log('✅ Entrenador registrado automáticamente con datos.');
+        // Verificar el estado del entrenador
+        if (entrenadorExistente.estado !== 'activo') {
+            console.log('Entrenador no activo:', entrenadorExistente.estado);
+            return res.redirect('/frontend/login?error=entrenador_no_activo');
+        }
+
+        // Agregar el entrenador a la solicitud para uso posterior
+        req.entrenador = entrenadorExistente;
+        req.user = { id: usuarioId, tipoUsuario: 'entrenador' };
+        
+        console.log('Entrenador verificado correctamente:', entrenadorExistente._id);
         next();
     } catch (error) {
-        console.error('❌ Error al registrar entrenador:', error);
-        next(error);
+        console.error('Error al verificar entrenador:', error);
+        res.status(500).send('Error del servidor al verificar el perfil de entrenador');
     }
 };

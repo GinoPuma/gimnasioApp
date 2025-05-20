@@ -6,6 +6,7 @@
     <title>Dashboard del Entrenador - GimnasioApp</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/notifications.css">
     <style>
         :root {
             --primary-color: #2b5876;
@@ -413,9 +414,14 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="diets-tab" data-bs-toggle="tab" data-bs-target="#diets" type="button" role="tab">
-                        <i class="fas fa-utensils me-1"></i> Planes Nutricionales
+                    <button class="nav-link" id="dietas-tab" data-bs-toggle="tab" data-bs-target="#dietas" type="button" role="tab">
+                        <i class="fas fa-utensils me-2"></i>Dietas
                     </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" href="/chat/entrenador/<%= idEntrenador %>" role="tab">
+                        <i class="fas fa-comments me-2"></i>Chat con Clientes
+                    </a>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule" type="button" role="tab">
@@ -472,51 +478,38 @@
                                 </div>
                                 <div class="card-body">
                                     <ul class="client-list">
-                                        <li class="client-item">
-                                            <div class="client-avatar" style="background-image: url('https://randomuser.me/api/portraits/men/32.jpg');"></div>
-                                            <div class="client-info">
-                                                <div class="client-name">Carlos Mendoza</div>
-                                                <div class="client-progress">
-                                                    <div class="progress" style="height: 5px;">
-                                                        <div class="progress-bar" role="progressbar" style="width: 75%;"></div>
+                                        <% if (typeof clientes !== 'undefined' && clientes && clientes.length > 0) { %>
+                                            <% clientes.slice(0, 3).forEach(function(cliente) { %>
+                                                <li class="client-item">
+                                                    <div class="client-avatar" style="background-color: #4e4376; color: white;"><%= cliente.nombre.charAt(0) %><%= cliente.apellido.charAt(0) %></div>
+                                                    <div class="client-info">
+                                                        <div class="client-name"><%= cliente.nombre %> <%= cliente.apellido %></div>
+                                                        <div class="client-progress">
+                                                            <div class="progress" style="height: 5px;">
+                                                                <div class="progress-bar" role="progressbar" style="width: 50%;"></div>
+                                                            </div>
+                                                            <small>Objetivo: <%= cliente.objetivo %></small>
+                                                        </div>
                                                     </div>
-                                                    <small>75% objetivo alcanzado</small>
-                                                </div>
-                                            </div>
-                                            <div class="client-actions">
-                                                <a href="#" class="action-btn btn-view">Ver</a>
-                                            </div>
-                                        </li>
-                                        <li class="client-item">
-                                            <div class="client-avatar" style="background-image: url('https://randomuser.me/api/portraits/women/44.jpg');"></div>
-                                            <div class="client-info">
-                                                <div class="client-name">Ana López</div>
-                                                <div class="client-progress">
-                                                    <div class="progress" style="height: 5px;">
-                                                        <div class="progress-bar" role="progressbar" style="width: 45%;"></div>
+                                                    <div class="client-actions">
+                                                        <a href="/clientes/<%= cliente._id %>/ver" class="action-btn btn-view">Ver</a>
+                                                        <a href="/chat/entrenador/<%= idEntrenador %>/cliente/<%= cliente._id %>" class="action-btn" style="background-color: #4CAF50; color: white;">
+                                                            <i class="fas fa-comments"></i>
+                                                        </a>
                                                     </div>
-                                                    <small>45% objetivo alcanzado</small>
-                                                </div>
-                                            </div>
-                                            <div class="client-actions">
-                                                <a href="#" class="action-btn btn-view">Ver</a>
-                                            </div>
-                                        </li>
-                                        <li class="client-item">
-                                            <div class="client-avatar" style="background-color: #f0ad4e; color: white;">JL</div>
-                                            <div class="client-info">
-                                                <div class="client-name">Juan Pérez</div>
-                                                <div class="client-progress">
-                                                    <div class="progress" style="height: 5px;">
-                                                        <div class="progress-bar" role="progressbar" style="width: 90%;"></div>
-                                                    </div>
-                                                    <small>90% objetivo alcanzado</small>
-                                                </div>
-                                            </div>
-                                            <div class="client-actions">
-                                                <a href="#" class="action-btn btn-view">Ver</a>
-                                            </div>
-                                        </li>
+                                                </li>
+                                            <% }); %>
+                                            <% if (clientes.length > 3) { %>
+                                                <li class="text-center mt-3">
+                                                    <a href="#clients" class="btn-link" onclick="document.getElementById('clients-tab').click();">Ver todos los clientes (<%= clientes.length %>)</a>
+                                                </li>
+                                            <% } %>
+                                        <% } else { %>
+                                            <li class="text-center p-3">
+                                                <p>No tienes clientes asignados aún.</p>
+                                                <p>Los clientes te seleccionarán como entrenador al registrarse.</p>
+                                            </li>
+                                        <% } %>
                                     </ul>
                                 </div>
                             </div>
@@ -601,75 +594,44 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="client-avatar me-3" style="background-image: url('https://randomuser.me/api/portraits/men/32.jpg');"></div>
-                                                    <div>
-                                                        <div class="fw-bold">Carlos Mendoza</div>
-                                                        <small class="text-muted">carlos@email.com</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>Ganancia muscular</td>
-                                            <td>
-                                                <div class="progress" style="height: 8px;">
-                                                    <div class="progress-bar" role="progressbar" style="width: 75%;"></div>
-                                                </div>
-                                                <small>75%</small>
-                                            </td>
-                                            <td>Hoy, 10:30</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary me-2">Ver</button>
-                                                <button class="btn btn-sm btn-warning">Editar</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="client-avatar me-3" style="background-image: url('https://randomuser.me/api/portraits/women/44.jpg');"></div>
-                                                    <div>
-                                                        <div class="fw-bold">Ana López</div>
-                                                        <small class="text-muted">ana@email.com</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>Pérdida de peso</td>
-                                            <td>
-                                                <div class="progress" style="height: 8px;">
-                                                    <div class="progress-bar" role="progressbar" style="width: 45%;"></div>
-                                                </div>
-                                                <small>45%</small>
-                                            </td>
-                                            <td>Ayer, 18:00</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary me-2">Ver</button>
-                                                <button class="btn btn-sm btn-warning">Editar</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="client-avatar me-3" style="background-color: #f0ad4e; color: white;">JL</div>
-                                                    <div>
-                                                        <div class="fw-bold">Juan Pérez</div>
-                                                        <small class="text-muted">juan@email.com</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>Tonificación</td>
-                                            <td>
-                                                <div class="progress" style="height: 8px;">
-                                                    <div class="progress-bar" role="progressbar" style="width: 90%;"></div>
-                                                </div>
-                                                <small>90%</small>
-                                            </td>
-                                            <td>15/06/2023</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary me-2">Ver</button>
-                                                <button class="btn btn-sm btn-warning">Editar</button>
-                                            </td>
-                                        </tr>
+                                        <% if (typeof clientes !== 'undefined' && clientes && clientes.length > 0) { %>
+                                            <% clientes.forEach(function(cliente) { %>
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="client-avatar me-3" style="background-color: #4e4376; color: white;"><%= cliente.nombre.charAt(0) %><%= cliente.apellido.charAt(0) %></div>
+                                                            <div>
+                                                                <div class="fw-bold"><%= cliente.nombre %> <%= cliente.apellido %></div>
+                                                                <small class="text-muted"><%= cliente.correo %></small>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td><%= cliente.objetivo %></td>
+                                                    <td>
+                                                        <div class="progress" style="height: 8px;">
+                                                            <div class="progress-bar" role="progressbar" style="width: 50%;"></div>
+                                                        </div>
+                                                        <small>50%</small>
+                                                    </td>
+                                                    <td>-</td>
+                                                    <td>
+                                                        <a href="/clientes/<%= cliente._id %>/ver" class="btn btn-sm btn-primary me-2">Ver</a>
+                                                        <a href="/rutinas/cliente/<%= cliente._id %>/asignadas/<%= idEntrenador %>" class="btn btn-sm btn-success me-2">Rutinas</a>
+                                                        <a href="/chat/entrenador/<%= idEntrenador %>/cliente/<%= cliente._id %>" class="btn btn-sm btn-info me-2">
+                                                            <i class="fas fa-comments"></i> Chat
+                                                        </a>
+                                                        <a href="/clientes/<%= cliente._id %>/editar" class="btn btn-sm btn-warning">Editar</a>
+                                                    </td>
+                                                </tr>
+                                            <% }); %>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="5" class="text-center">
+                                                    <p>No tienes clientes asignados aún.</p>
+                                                    <p>Los clientes te seleccionarán como entrenador al registrarse.</p>
+                                                </td>
+                                            </tr>
+                                        <% } %>
                                     </tbody>
                                 </table>
                             </div>
@@ -687,34 +649,64 @@
                                 </div>
                                 <div class="card-body d-flex align-items-center justify-content-center">
                                     <div class="form-container w-100">
-                                        <form>
+                                        <form id="nuevaRutinaForm" action="/rutinas/crear" method="POST" onsubmit="return crearNuevaRutina(event)">
+                                            <input type="hidden" name="entrenadorId" value="<%= idEntrenador %>">
                                             <div class="mb-3">
-                                                <label for="routineName" class="form-label">Nombre de la Rutina</label>
-                                                <input type="text" class="form-control" id="routineName" placeholder="Ej: Rutina Piernas Avanzada">
+                                                <label for="nombre" class="form-label">Nombre de la Rutina</label>
+                                                <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ej: Rutina Piernas Avanzada" required>
                                             </div>
                                             <div class="mb-3">
-                                                <label for="routineType" class="form-label">Tipo de Rutina</label>
-                                                <select class="form-select" id="routineType">
-                                                    <option selected disabled>Seleccione un tipo</option>
-                                                    <option>Fuerza</option>
-                                                    <option>Hipertrofia</option>
-                                                    <option>Resistencia</option>
-                                                    <option>Cardio</option>
-                                                    <option>Flexibilidad</option>
+                                                <label for="descripcion" class="form-label">Descripción</label>
+                                                <textarea class="form-control" id="descripcion" name="descripcion" rows="2" placeholder="Breve descripción de la rutina"></textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="duracionSemanas" class="form-label">Duración (semanas)</label>
+                                                <input type="number" class="form-control" id="duracionSemanas" name="duracionSemanas" min="1" max="52" value="4" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="fechaInicio" class="form-label">Fecha de inicio</label>
+                                                <input type="date" class="form-control" id="fechaInicio" name="fechaInicio" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="estado" class="form-label">Estado</label>
+                                                <select class="form-select" id="estado" name="estado" required>
+                                                    <option value="Activa">Activa</option>
+                                                    <option value="Inactiva">Inactiva</option>
+                                                    <option value="Borrador">Borrador</option>
                                                 </select>
                                             </div>
                                             <div class="mb-3">
-                                                <label for="routineLevel" class="form-label">Nivel</label>
-                                                <select class="form-select" id="routineLevel">
-                                                    <option selected disabled>Seleccione nivel</option>
-                                                    <option>Principiante</option>
-                                                    <option>Intermedio</option>
-                                                    <option>Avanzado</option>
-                                                </select>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="routineDays" class="form-label">Días por semana</label>
-                                                <input type="number" class="form-control" id="routineDays" min="1" max="7" value="3">
+                                                <label class="form-label">Días de entrenamiento</label>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-lunes" name="diasSemana[]" value="Lunes">
+                                                        <label class="form-check-label" for="dia-lunes">Lunes</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-martes" name="diasSemana[]" value="Martes">
+                                                        <label class="form-check-label" for="dia-martes">Martes</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-miercoles" name="diasSemana[]" value="Miércoles">
+                                                        <label class="form-check-label" for="dia-miercoles">Miércoles</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-jueves" name="diasSemana[]" value="Jueves">
+                                                        <label class="form-check-label" for="dia-jueves">Jueves</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-viernes" name="diasSemana[]" value="Viernes">
+                                                        <label class="form-check-label" for="dia-viernes">Viernes</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-sabado" name="diasSemana[]" value="Sábado">
+                                                        <label class="form-check-label" for="dia-sabado">Sábado</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="dia-domingo" name="diasSemana[]" value="Domingo">
+                                                        <label class="form-check-label" for="dia-domingo">Domingo</label>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <button type="submit" class="btn btn-primary w-100">Crear Rutina</button>
                                         </form>
@@ -727,7 +719,7 @@
                                 <div class="card-header">
                                     <span><i class="fas fa-dumbbell me-2"></i>Mis Rutinas</span>
                                     <div class="input-group" style="width: 250px;">
-                                        <input type="text" class="form-control" placeholder="Buscar rutina...">
+                                        <input type="text" class="form-control" id="buscarRutina" placeholder="Buscar rutina...">
                                         <button class="btn btn-outline-secondary" type="button"><i class="fas fa-search"></i></button>
                                     </div>
                                 </div>
@@ -737,47 +729,38 @@
                                             <thead>
                                                 <tr>
                                                     <th>Nombre</th>
-                                                    <th>Tipo</th>
-                                                    <th>Nivel</th>
-                                                    <th>Días/Sem</th>
-                                                    <th>Clientes</th>
+                                                    <th>Descripción</th>
+                                                    <th>Duración</th>
+                                                    <th>Fecha Inicio</th>
+                                                    <th>Estado</th>
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Rutina Full Body</td>
-                                                    <td><span class="badge badge-custom badge-primary">Fuerza</span></td>
-                                                    <td>Intermedio</td>
-                                                    <td>3</td>
-                                                    <td>12</td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-primary me-2">Ver</button>
-                                                        <button class="btn btn-sm btn-success">Asignar</button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Cardio Intenso</td>
-                                                    <td><span class="badge badge-custom badge-success">Cardio</span></td>
-                                                    <td>Avanzado</td>
-                                                    <td>4</td>
-                                                    <td>8</td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-primary me-2">Ver</button>
-                                                        <button class="btn btn-sm btn-success">Asignar</button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Principiantes Gym</td>
-                                                    <td><span class="badge badge-custom badge-warning">Hipertrofia</span></td>
-                                                    <td>Principiante</td>
-                                                    <td>2</td>
-                                                    <td>5</td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-primary me-2">Ver</button>
-                                                        <button class="btn btn-sm btn-success">Asignar</button>
-                                                    </td>
-                                                </tr>
+                                            <tbody id="rutinasTableBody">
+                                                <% if (typeof rutinas !== 'undefined' && rutinas && rutinas.length > 0) { %>
+                                                    <% rutinas.forEach(function(rutina) { %>
+                                                        <tr>
+                                                            <td><%= rutina.nombre %></td>
+                                                            <td><%= rutina.descripcion || 'Sin descripción' %></td>
+                                                            <td><%= rutina.duracionSemanas %> semanas</td>
+                                                            <td><%= rutina.fechaInicio ? new Date(rutina.fechaInicio).toLocaleDateString() : 'No definida' %></td>
+                                                            <td>
+                                                                <span class="badge badge-custom <%= rutina.estado === 'Activa' ? 'badge-success' : (rutina.estado === 'Inactiva' ? 'badge-warning' : 'badge-secondary') %>">
+                                                                    <%= rutina.estado %>
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <a href="/rutinas/<%= rutina._id %>" class="btn btn-sm btn-primary me-2 verRutinaBtn">Ver</a>
+                                                                <a href="/rutinas/<%= rutina._id %>/asignar/<%= idEntrenador %>" class="btn btn-sm btn-success">Asignar</a>
+                                                                <a href="/rutinas/<%= rutina._id %>/editar" class="btn btn-sm btn-warning editarRutinaBtn">Editar</a>
+                                                            </td>
+                                                        </tr>
+                                                    <% }); %>
+                                                <% } else { %>
+                                                    <tr>
+                                                        <td colspan="6" class="text-center">No hay rutinas disponibles</td>
+                                                    </tr>
+                                                <% } %>
                                             </tbody>
                                         </table>
                                     </div>
@@ -797,31 +780,57 @@
                                 </div>
                                 <div class="card-body d-flex align-items-center justify-content-center">
                                     <div class="form-container w-100">
-                                        <form>
+                                        <form id="nuevaDietaForm" action="/dietas/crear" method="POST" onsubmit="return crearNuevaDieta(event)">
+                                            <input type="hidden" name="entrenadorId" value="<%= idEntrenador %>">
                                             <div class="mb-3">
-                                                <label for="dietName" class="form-label">Nombre del Plan</label>
-                                                <input type="text" class="form-control" id="dietName" placeholder="Ej: Dieta Definición Muscular">
+                                                <label for="nombre" class="form-label">Nombre del Plan</label>
+                                                <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ej: Dieta Definición Muscular" required>
                                             </div>
                                             <div class="mb-3">
-                                                <label for="dietObjective" class="form-label">Objetivo</label>
-                                                <select class="form-select" id="dietObjective">
-                                                    <option selected disabled>Seleccione objetivo</option>
-                                                    <option>Pérdida de peso</option>
-                                                    <option>Ganancia muscular</option>
-                                                    <option>Definición</option>
-                                                    <option>Mantenimiento</option>
-                                                    <option>Rendimiento deportivo</option>
-                                                </select>
+                                                <label for="descripcion" class="form-label">Descripción</label>
+                                                <textarea class="form-control" id="descripcion" name="descripcion" rows="2" placeholder="Breve descripción del plan nutricional"></textarea>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="fechaInicio" class="form-label">Fecha Inicio</label>
+                                                    <input type="date" class="form-control" id="fechaInicio" name="fechaInicio">
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="fechaFin" class="form-label">Fecha Fin</label>
+                                                    <input type="date" class="form-control" id="fechaFin" name="fechaFin">
+                                                </div>
                                             </div>
                                             <div class="mb-3">
-                                                <label for="dietCalories" class="form-label">Calorías diarias</label>
-                                                <input type="number" class="form-control" id="dietCalories" placeholder="Ej: 2500">
+                                                <label class="form-label">Comidas</label>
+                                                <div id="comidasContainer">
+                                                    <div class="comida-item card mb-3">
+                                                        <div class="card-body">
+                                                            <div class="mb-2">
+                                                                <label class="form-label">Tipo de Comida</label>
+                                                                <select class="form-select" name="comidas[0][tipoComida]">
+                                                                    <option value="Desayuno">Desayuno</option>
+                                                                    <option value="Almuerzo">Almuerzo</option>
+                                                                    <option value="Cena">Cena</option>
+                                                                    <option value="Merienda">Merienda</option>
+                                                                    <option value="Snack">Snack</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-2">
+                                                                <label class="form-label">Descripción</label>
+                                                                <textarea class="form-control" name="comidas[0][descripcion]" rows="2" placeholder="Detalle de alimentos y cantidades"></textarea>
+                                                            </div>
+                                                            <div class="mb-2">
+                                                                <label class="form-label">Calorías Estimadas</label>
+                                                                <input type="number" class="form-control" name="comidas[0][caloriasEstimadas]" placeholder="Ej: 500">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="btn btn-outline-secondary w-100 mt-2" id="agregarComida">
+                                                    <i class="fas fa-plus me-2"></i>Agregar Comida
+                                                </button>
                                             </div>
-                                            <div class="mb-3">
-                                                <label for="dietDays" class="form-label">Días del plan</label>
-                                                <input type="number" class="form-control" id="dietDays" min="7" max="30" value="7">
-                                            </div>
-                                            <button type="submit" class="btn btn-primary w-100">Crear Plan</button>
+                                            <button type="submit" class="btn btn-primary w-100 mt-3">Crear Plan Nutricional</button>
                                         </form>
                                     </div>
                                 </div>
@@ -842,47 +851,34 @@
                                             <thead>
                                                 <tr>
                                                     <th>Nombre</th>
-                                                    <th>Objetivo</th>
-                                                    <th>Calorías</th>
-                                                    <th>Duración</th>
-                                                    <th>Clientes</th>
+                                                    <th>Descripción</th>
+                                                    <th>Fecha Inicio</th>
+                                                    <th>Fecha Fin</th>
+                                                    <th>Comidas</th>
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Definición Muscular</td>
-                                                    <td><span class="badge badge-custom badge-primary">Definición</span></td>
-                                                    <td>2200</td>
-                                                    <td>14 días</td>
-                                                    <td>9</td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-primary me-2">Ver</button>
-                                                        <button class="btn btn-sm btn-success">Asignar</button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Volumen Limpio</td>
-                                                    <td><span class="badge badge-custom badge-success">Ganancia</span></td>
-                                                    <td>3000</td>
-                                                    <td>30 días</td>
-                                                    <td>12</td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-primary me-2">Ver</button>
-                                                        <button class="btn btn-sm btn-success">Asignar</button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Pérdida de Peso</td>
-                                                    <td><span class="badge badge-custom badge-warning">Pérdida</span></td>
-                                                    <td>1800</td>
-                                                    <td>21 días</td>
-                                                    <td>7</td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-primary me-2">Ver</button>
-                                                        <button class="btn btn-sm btn-success">Asignar</button>
-                                                    </td>
-                                                </tr>
+                                            <tbody id="dietasTableBody">
+                                                <% if (typeof dietas !== 'undefined' && dietas && dietas.length > 0) { %>
+                                                    <% dietas.forEach(function(dieta) { %>
+                                                        <tr>
+                                                            <td><%= dieta.nombre %></td>
+                                                            <td><%= dieta.descripcion || 'Sin descripción' %></td>
+                                                            <td><%= dieta.fechaInicio ? new Date(dieta.fechaInicio).toLocaleDateString() : 'No definida' %></td>
+                                                            <td><%= dieta.fechaFin ? new Date(dieta.fechaFin).toLocaleDateString() : 'No definida' %></td>
+                                                            <td><%= dieta.comidas ? dieta.comidas.length : 0 %> comidas</td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-primary me-2 verDietaBtn" data-dieta-id="<%= dieta._id %>">Ver</button>
+                                                                <button class="btn btn-sm btn-success asignarDietaBtn" data-dieta-id="<%= dieta._id %>">Asignar</button>
+                                                                <button class="btn btn-sm btn-warning editarDietaBtn" data-dieta-id="<%= dieta._id %>">Editar</button>
+                                                            </td>
+                                                        </tr>
+                                                    <% }); %>
+                                                <% } else { %>
+                                                    <tr>
+                                                        <td colspan="6" class="text-center">No hay planes nutricionales disponibles</td>
+                                                    </tr>
+                                                <% } %>
                                             </tbody>
                                         </table>
                                     </div>
@@ -931,15 +927,738 @@
             </div>
         </div>
     </div>
+    
+    <!-- Modal para asignar dieta a cliente -->
+    <div class="modal fade" id="asignarDietaModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Asignar Plan Nutricional</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Plan Nutricional</label>
+                        <input type="text" class="form-control" id="dietaNombre" readonly>
+                        <input type="hidden" id="dietaId">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Buscar Cliente</label>
+                        <input type="text" class="form-control" id="buscarClienteInput" placeholder="Nombre, apellido o correo...">
+                    </div>
+                    
+                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-hover">
+                            <thead class="sticky-top bg-light">
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Apellido</th>
+                                    <th>Correo</th>
+                                    <th>Objetivo</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientesTableBody">
+                                <!-- Aquí se cargarán los clientes dinámicamente -->
+                                <tr>
+                                    <td colspan="5" class="text-center">Cargando clientes...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para ver detalles de dieta -->
+    <div class="modal fade" id="verDietaModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-utensils me-2"></i>Detalles del Plan Nutricional</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5>Información General</h5>
+                            <p><strong>Nombre:</strong> <span id="detalleDietaNombre"></span></p>
+                            <p><strong>Descripción:</strong> <span id="detalleDietaDescripcion"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Fechas</h5>
+                            <p><strong>Fecha Inicio:</strong> <span id="detalleDietaFechaInicio"></span></p>
+                            <p><strong>Fecha Fin:</strong> <span id="detalleDietaFechaFin"></span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h5>Cliente Asignado</h5>
+                            <p id="detalleDietaCliente">No asignado a ningún cliente</p>
+                        </div>
+                    </div>
+                    
+                    <h5>Comidas</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Descripción</th>
+                                    <th>Calorías</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detalleDietaComidas">
+                                <!-- Aquí se cargarán las comidas dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Ver Dieta -->
+    <div class="modal fade" id="verDietaModal" tabindex="-1" aria-labelledby="verDietaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="verDietaModalLabel">Detalles del Plan Nutricional</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="verDietaModalBody">
+                    <!-- El contenido se cargaru00e1 dinu00e1micamente -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Asignar Dieta -->
+    <div class="modal fade" id="asignarDietaModal" tabindex="-1" aria-labelledby="asignarDietaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="asignarDietaModalLabel">Asignar Plan Nutricional</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="asignarDietaForm">
+                        <div class="mb-3">
+                            <label for="clienteParaDieta" class="form-label">Seleccionar Cliente</label>
+                            <select class="form-select" id="clienteParaDieta" required>
+                                <!-- Opciones se cargaru00e1n dinu00e1micamente -->
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirmarAsignarDieta">Asignar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Modal para asignar rutina a cliente -->
+<div class="modal fade" id="asignarRutinaModal" tabindex="-1" aria-labelledby="asignarRutinaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="asignarRutinaModalLabel">Asignar Rutina a Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="asignarRutinaForm">
+                    <input type="hidden" id="rutinaId" name="rutinaId">
+                    <input type="hidden" name="entrenadorId" value="<%= idEntrenador %>">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Rutina seleccionada:</label>
+                        <p id="rutinaSeleccionada" class="form-control-static"></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="clienteId" class="form-label">Seleccionar Cliente:</label>
+                        <select class="form-select" id="clienteId" name="clienteId" required>
+                            <option value="">Selecciona un cliente</option>
+                            <% if (typeof clientes !== 'undefined' && clientes && clientes.length > 0) { %>
+                                <% clientes.forEach(function(cliente) { %>
+                                    <option value="<%= cliente._id %>"><%= cliente.nombre %> <%= cliente.apellido %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="asignarRutinaBtn" onclick="asignarRutina()">Asignar Rutina</button>
+            </div>
+        </div>
+    </div>
+</div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Logout confirmation
+    // Función para preparar la asignación de rutina
+    function prepararAsignacionRutina(rutinaId, nombreRutina) {
+        console.log('Preparando asignación de rutina:', rutinaId, nombreRutina);
+        // Establecer los valores en el modal
+        document.getElementById('rutinaId').value = rutinaId;
+        document.getElementById('rutinaSeleccionada').textContent = nombreRutina;
+    }
+    
+    // Función para asignar rutina a cliente
+    function asignarRutina() {
+        console.log('Ejecutando función asignarRutina');
+        
+        const rutinaId = document.getElementById('rutinaId').value;
+        const clienteId = document.getElementById('clienteId').value;
+        
+        if (!clienteId || clienteId === '') {
+            alert('Por favor, selecciona un cliente');
+            return;
+        }
+        
+        console.log('Datos para asignar rutina:', {
+            rutinaId,
+            clienteId
+        });
+        
+        // Mostrar indicador de carga
+        document.getElementById('asignarRutinaBtn').disabled = true;
+        document.getElementById('asignarRutinaBtn').textContent = 'Asignando...';
+
+        // Enviar solicitud al servidor
+        fetch('/rutinas/asignar', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                rutinaId: rutinaId,
+                clienteId: clienteId
+            })
+        })
+        .then(response => {
+            console.log('Respuesta del servidor:', response);
+            if (!response.ok) {
+                return response.json().then(err => { 
+                    throw new Error(err.error || 'Error al asignar rutina'); 
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta exitosa:', data);
+            // Mostrar mensaje de éxito
+            alert(data.mensaje || 'Rutina asignada correctamente');
+            
+            // Cerrar el modal
+            const modalElement = document.getElementById('asignarRutinaModal');
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            } else {
+                // Si no se puede obtener la instancia, cerrar manualmente
+                modalElement.classList.remove('show');
+                modalElement.style.display = 'none';
+                document.body.classList.remove('modal-open');
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+            }
+            
+            // Recargar la página para mostrar los cambios
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error: ' + error.message);
+        })
+        .finally(() => {
+            // Restaurar el botón
+            document.getElementById('asignarRutinaBtn').disabled = false;
+            document.getElementById('asignarRutinaBtn').textContent = 'Asignar Rutina';
+        });    
+    }
+        
+        // Inicialización cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Inicializando dashboard del entrenador...');
+            
+            // Inicializar todos los modales de Bootstrap
+            const modales = document.querySelectorAll('.modal');
+            modales.forEach(modalElement => {
+                try {
+                    // Crear instancia del modal para que esté disponible
+                    new bootstrap.Modal(modalElement);
+                    console.log('Modal inicializado:', modalElement.id);
+                } catch (error) {
+                    console.error('Error al inicializar modal:', modalElement.id, error);
+                }
+            });
+            
+            // Agregar manejadores de eventos a los botones de asignar
+            const botonesAsignar = document.querySelectorAll('[id^="asignarBtn_"]');
+            botonesAsignar.forEach(boton => {
+                console.log('Configurando botón de asignar:', boton.id);
+                boton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const rutinaId = this.id.split('_')[1];
+                    const nombreRutina = this.getAttribute('data-nombre') || 'Rutina seleccionada';
+                    console.log('Click en botón asignar para rutina:', rutinaId);
+                    abrirModalAsignacion(rutinaId, nombreRutina);
+                });
+            });
+            // Cargar datos iniciales
+            actualizarTablaRutinas();
+            actualizarTablaDietas();
+            
+            // Configurar event listeners
+            configurarEventListeners();
+        });
+        
+        // Configurar todos los event listeners
+        function configurarEventListeners() {
+            // Event listener para agregar comida
+            document.getElementById('agregarComida').addEventListener('click', agregarComida);
+            
+            // Event listeners para los botones de dietas
+            document.addEventListener('click', function(event) {
+                if (event.target.classList.contains('verDietaBtn') || 
+                    event.target.closest('.verDietaBtn')) {
+                    const btn = event.target.classList.contains('verDietaBtn') ? 
+                                event.target : event.target.closest('.verDietaBtn');
+                    const dietaId = btn.getAttribute('data-dieta-id');
+                    verDetalleDieta(dietaId);
+                }
+                
+                if (event.target.classList.contains('asignarDietaBtn') || 
+                    event.target.closest('.asignarDietaBtn')) {
+                    const btn = event.target.classList.contains('asignarDietaBtn') ? 
+                                event.target : event.target.closest('.asignarDietaBtn');
+                    const dietaId = btn.getAttribute('data-dieta-id');
+                    mostrarModalAsignarDieta(dietaId);
+                }
+            });
+            
+            // Event listener para confirmar asignación de dieta
+            document.getElementById('confirmarAsignarDieta').addEventListener('click', function() {
+                const dietaId = this.getAttribute('data-dieta-id');
+                const clienteId = document.getElementById('clienteParaDieta').value;
+                
+                if (!clienteId) {
+                    mostrarAlerta('Debe seleccionar un cliente', 'warning');
+                    return;
+                }
+                
+                // Enviar la asignación al servidor
+                fetch(`/dietas/${dietaId}/asignar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ clienteId })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.error || 'Error al asignar la dieta');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Dieta asignada exitosamente:', data);
+                    mostrarAlerta('Plan nutricional asignado exitosamente', 'success');
+                    
+                    // Cerrar el modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('asignarDietaModal'));
+                    modal.hide();
+                    
+                    // Actualizar tabla de dietas
+                    actualizarTablaDietas();
+                })
+                .catch(error => {
+                    console.error('Error al asignar dieta:', error);
+                    mostrarAlerta('Error al asignar dieta: ' + error.message, 'danger');
+                });
+            });
+        }
+        
+        // Cerrar sesión
         document.getElementById('logoutBtn').addEventListener('click', function() {
-            var logoutModal = new bootstrap.Modal(document.getElementById('logoutModal'));
+            const logoutModal = new bootstrap.Modal(document.getElementById('logoutModal'));
             logoutModal.show();
         });
+        
+        document.getElementById('confirmLogout').addEventListener('click', function() {
+            window.location.href = '/logout';
+        });    
+        
+        // Función para crear una nueva rutina mediante AJAX
+        function crearNuevaRutina(event) {
+            event.preventDefault();
+            
+            // Mostrar indicador de carga
+            const submitBtn = document.querySelector('#nuevaRutinaForm button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creando...';
+            submitBtn.disabled = true;
+            
+            // Obtener los datos del formulario
+            const formData = new FormData(document.getElementById('nuevaRutinaForm'));
+            const formDataObj = {};
+            formData.forEach((value, key) => {
+                // Manejar los checkboxes de días de la semana
+                if (key === 'diasSemana[]') {
+                    if (!formDataObj.diasSemana) {
+                        formDataObj.diasSemana = [];
+                    }
+                    formDataObj.diasSemana.push(value);
+                } else {
+                    formDataObj[key] = value;
+                }
+            });
+            
+            // Enviar los datos mediante AJAX
+            fetch('/rutinas/crear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(formDataObj)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al crear la rutina');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Rutina creada:', data);
+                
+                // Mostrar mensaje de éxito
+                mostrarAlerta('Rutina creada con éxito', 'success');
+                
+                // Limpiar el formulario
+                document.getElementById('nuevaRutinaForm').reset();
+                
+                // Actualizar la tabla de rutinas
+                actualizarTablaRutinas();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarAlerta('Error al crear la rutina: ' + error.message, 'danger');
+            })
+            .finally(() => {
+                // Restaurar el botón
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            });
+            
+            return false;
+        }
+        
+        // Función para actualizar la tabla de rutinas
+        function actualizarTablaRutinas() {
+            const entrenadorId = document.querySelector('input[name="entrenadorId"]').value;
+            
+            fetch(`/rutinas?entrenadorId=${entrenadorId}`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const rutinas = data;
+                const tbody = document.getElementById('rutinasTableBody');
+                
+                // Limpiar la tabla
+                tbody.innerHTML = '';
+                
+                if (rutinas && rutinas.length > 0) {
+                    // Agregar las rutinas a la tabla
+                    rutinas.forEach(rutina => {
+                        const tr = document.createElement('tr');
+                        
+                        // Formatear la fecha
+                        const fechaInicio = rutina.fechaInicio ? new Date(rutina.fechaInicio).toLocaleDateString() : 'No definida';
+                        
+                        // Determinar la clase de la insignia de estado
+                        const estadoClass = rutina.estado === 'Activa' ? 'badge-success' : (rutina.estado === 'Inactiva' ? 'badge-warning' : 'badge-secondary');
+                        
+                        tr.innerHTML = `
+                            <td>${rutina.nombre}</td>
+                            <td>${rutina.descripcion || 'Sin descripción'}</td>
+                            <td>${rutina.duracionSemanas} semanas</td>
+                            <td>${fechaInicio}</td>
+                            <td>
+                                <span class="badge badge-custom ${estadoClass}">
+                                    ${rutina.estado}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="/rutinas/${rutina._id}" class="btn btn-sm btn-primary me-2 verRutinaBtn">Ver</a>
+                                <button class="btn btn-sm btn-success asignarRutinaBtn" data-rutina-id="${rutina._id}">Asignar</button>
+                                <a href="/rutinas/${rutina._id}/editar" class="btn btn-sm btn-warning editarRutinaBtn">Editar</a>
+                            </td>
+                        `;
+                        
+                        tbody.appendChild(tr);
+                    });
+                    
+                    // Agregar event listeners a los botones
+                    agregarEventListeners();
+                } else {
+                    // Mostrar mensaje si no hay rutinas
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center">No hay rutinas disponibles</td>
+                        </tr>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error al obtener rutinas:', error);
+                mostrarAlerta('Error al obtener rutinas: ' + error.message, 'danger');
+            });
+        }
+        
+        // Función para agregar event listeners a los botones de la tabla
+        function agregarEventListeners() {
+            // Botón de asignar rutina
+            document.querySelectorAll('.asignarRutinaBtn').forEach(btn => {
+                // Eliminar event listeners previos para evitar duplicados
+                btn.removeEventListener('click', asignarRutinaHandler);
+                btn.addEventListener('click', asignarRutinaHandler);
+            });
+            
+            // Botones de dietas
+            document.querySelectorAll('.verDietaBtn').forEach(btn => {
+                btn.removeEventListener('click', verDietaHandler);
+                btn.addEventListener('click', verDietaHandler);
+            });
+            
+            document.querySelectorAll('.asignarDietaBtn').forEach(btn => {
+                btn.removeEventListener('click', asignarDietaHandler);
+                btn.addEventListener('click', asignarDietaHandler);
+            });
+        }
+        
+        // Handler para el botón de asignar rutina
+        function asignarRutinaHandler() {
+            const rutinaId = this.getAttribute('data-rutina-id');
+            mostrarModalAsignarRutina(rutinaId);
+        }
+        
+        // Función para mostrar el modal de asignar rutina
+        // La función mostrarModalAsignarRutina ha sido reemplazada por la nueva implementación
+        // que usa el modal Bootstrap y la función prepararAsignacionRutina
+        
+        // Función para ver el detalle de una dieta
+        function verDetalleDieta(dietaId) {
+            console.log('Viendo detalle de dieta:', dietaId);
+            fetch(`/dietas/${dietaId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al obtener la dieta');
+                    }
+                    return response.json();
+                })
+                .then(dieta => {
+                    console.log('Datos de dieta obtenidos:', dieta);
+                    // Mostrar modal con detalles de la dieta
+                    const modalTitle = document.getElementById('verDietaModalLabel');
+                    const modalBody = document.getElementById('verDietaModalBody');
+                    
+                    if (modalTitle && modalBody) {
+                        modalTitle.textContent = dieta.nombre;
+                        
+                        let contenidoHTML = `
+                            <div class="dieta-info mb-4">
+                                <p><strong>Descripción:</strong> ${dieta.descripcion || 'Sin descripción'}</p>
+                                <p><strong>Fecha Inicio:</strong> ${dieta.fechaInicio ? new Date(dieta.fechaInicio).toLocaleDateString() : 'No definida'}</p>
+                                <p><strong>Fecha Fin:</strong> ${dieta.fechaFin ? new Date(dieta.fechaFin).toLocaleDateString() : 'No definida'}</p>
+                            </div>
+                            <h5>Comidas</h5>
+                        `;
+                        
+                        if (dieta.comidas && dieta.comidas.length > 0) {
+                            contenidoHTML += '<div class="comidas-container">';
+                            dieta.comidas.forEach(comida => {
+                                contenidoHTML += `
+                                    <div class="comida-card card mb-3">
+                                        <div class="card-header bg-light">
+                                            <strong>${comida.tipoComida}</strong>
+                                            <span class="badge bg-info float-end">${comida.caloriasEstimadas || 0} cal</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <p>${comida.descripcion || 'Sin descripción'}</p>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            contenidoHTML += '</div>';
+                        } else {
+                            contenidoHTML += '<p class="text-muted">No hay comidas definidas para este plan.</p>';
+                        }
+                        
+                        modalBody.innerHTML = contenidoHTML;
+                        
+                        // Mostrar el modal
+                        const modal = new bootstrap.Modal(document.getElementById('verDietaModal'));
+                        modal.show();
+                    } else {
+                        console.error('No se encontraron los elementos del modal');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al obtener la dieta:', error);
+                    mostrarAlerta('Error al obtener la dieta: ' + error.message, 'danger');
+                });
+        }
+        
+        // Función para mostrar el modal de asignar dieta
+        function mostrarModalAsignarDieta(dietaId) {
+            console.log('Mostrando modal para asignar dieta:', dietaId);
+            // Obtener los clientes del entrenador
+            const entrenadorId = document.querySelector('input[name="entrenadorId"]').value;
+            
+            fetch(`/entrenadores/${entrenadorId}/clientes`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al obtener los clientes');
+                    }
+                    return response.json();
+                })
+                .then(clientes => {
+                    console.log('Clientes obtenidos:', clientes);
+                    // Actualizar el modal con la lista de clientes
+                    const selectCliente = document.getElementById('clienteParaDieta');
+                    selectCliente.innerHTML = '';
+                    
+                    if (clientes && clientes.length > 0) {
+                        clientes.forEach(cliente => {
+                            const option = document.createElement('option');
+                            option.value = cliente._id;
+                            option.textContent = `${cliente.nombre} ${cliente.apellido}`;
+                            selectCliente.appendChild(option);
+                        });
+                    } else {
+                        const option = document.createElement('option');
+                        option.disabled = true;
+                        option.selected = true;
+                        option.textContent = 'No hay clientes disponibles';
+                        selectCliente.appendChild(option);
+                    }
+                    
+                    // Guardar el ID de la dieta en el botón de confirmar
+                    document.getElementById('confirmarAsignarDieta').setAttribute('data-dieta-id', dietaId);
+                    
+                    // Mostrar el modal
+                    const modal = new bootstrap.Modal(document.getElementById('asignarDietaModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error al obtener los clientes:', error);
+                    mostrarAlerta('Error al obtener los clientes: ' + error.message, 'danger');
+                });
+        }
+        
+        // Función para mostrar alertas
+        function mostrarAlerta(mensaje, tipo) {
+            // Crear el elemento de alerta
+            const alertaDiv = document.createElement('div');
+            alertaDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
+            alertaDiv.role = 'alert';
+            alertaDiv.innerHTML = `
+                ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Insertar la alerta al principio del contenedor principal
+            const mainContainer = document.querySelector('.main-container');
+            mainContainer.insertBefore(alertaDiv, mainContainer.firstChild);
+            
+            // Eliminar la alerta después de 5 segundos
+            setTimeout(() => {
+                alertaDiv.remove();
+            }, 5000);
+        }
+        
+        // Buscar rutinas - Función mejorada
+        document.getElementById('buscarRutina').addEventListener('input', function() {
+            const busqueda = this.value.toLowerCase().trim();
+            const filas = document.querySelectorAll('#rutinasTableBody tr');
+            
+            // Si la búsqueda está vacía, mostrar todas las filas
+            if (busqueda === '') {
+                filas.forEach(fila => {
+                    fila.style.display = '';
+                });
+                return;
+            }
+            
+            // Buscar en cada fila
+            filas.forEach(fila => {
+                // Obtener el texto de cada celda individualmente (excepto la última que contiene botones)
+                const celdas = Array.from(fila.querySelectorAll('td:not(:last-child)'));
+                
+                // Verificar si alguna celda contiene el texto de búsqueda
+                const coincide = celdas.some(celda => {
+                    const texto = celda.textContent.toLowerCase().trim();
+                    return texto.includes(busqueda);
+                });
+                
+                // Mostrar u ocultar la fila según el resultado
+                if (coincide) {
+                    fila.style.display = '';
+                    // Resaltar el texto que coincide
+                    celdas.forEach(celda => {
+                        const texto = celda.textContent;
+                        const textoLower = texto.toLowerCase();
+                        if (textoLower.includes(busqueda)) {
+                            const index = textoLower.indexOf(busqueda);
+                            const parteAntes = texto.substring(0, index);
+                            const parteCoincidente = texto.substring(index, index + busqueda.length);
+                            const parteDespues = texto.substring(index + busqueda.length);
+                            celda.innerHTML = `${parteAntes}<span class="highlight">${parteCoincidente}</span>${parteDespues}`;
+                        }
+                    });
+                } else {
+                    fila.style.display = 'none';
+                }
+            });
+        });
+        
+        // Agregar estilo para el resaltado
+        const style = document.createElement('style');
+        style.textContent = `
+            .highlight {
+                background-color: yellow;
+                font-weight: bold;
+            }
+        `;
+        document.head.appendChild(style);
 
         // Check if user is logged in (simulated)
         function checkAuth() {
@@ -953,13 +1672,35 @@
 
         // Check auth on page load
         checkAuth();
-
-        // Simulate session expiration (for demo purposes)
-        setTimeout(() => {
-            // sessionStorage.setItem('loggedIn', 'false');
-            // Uncomment the line above and implement proper session checking
-            // in a real application
-        }, 3600000); // 1 hour
+        
+        // Cargar rutinas y dietas al iniciar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Solo actualizar la tabla si estamos en la pestaña de rutinas
+            const rutinasTab = document.getElementById('routines-tab');
+            if (rutinasTab && rutinasTab.classList.contains('active')) {
+                actualizarTablaRutinas();
+            }
+            
+            // Solo actualizar la tabla si estamos en la pestaña de dietas
+            const dietasTab = document.getElementById('diets-tab');
+            if (dietasTab && dietasTab.classList.contains('active')) {
+                actualizarTablaDietas();
+            }
+            
+            // Actualizar las tablas cuando se haga clic en las pestañas
+            document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function(event) {
+                    if (event.target.getAttribute('data-bs-target') === '#routines') {
+                        actualizarTablaRutinas();
+                    } else if (event.target.getAttribute('data-bs-target') === '#diets') {
+                        actualizarTablaDietas();
+                    }
+                });
+            });
+            
+            // Configurar el formulario de dietas
+            configurarFormularioDietas();
+        });
 
         // Sample chart for dashboard (would be in dashboard tab)
         if (document.getElementById('progressChart')) {
@@ -985,6 +1726,509 @@
                 }
             });
         }
+
+        // Funciones para manejar planes nutricionales
+        function configurarFormularioDietas() {
+            // Configurar el botón para agregar comidas
+            const btnAgregarComida = document.getElementById('agregarComida');
+            if (btnAgregarComida) {
+                btnAgregarComida.addEventListener('click', agregarNuevaComida);
+            }
+
+            // Configurar el formulario de nueva dieta
+            const formNuevaDieta = document.getElementById('nuevaDietaForm');
+            if (formNuevaDieta) {
+                formNuevaDieta.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    crearNuevaDieta(event);
+                });
+            }
+
+            // Configurar botones de ver, asignar y editar dietas
+            document.addEventListener('click', function(event) {
+                if (event.target.classList.contains('verDietaBtn')) {
+                    const dietaId = event.target.getAttribute('data-dieta-id');
+                    verDetalleDieta(dietaId);
+                } else if (event.target.classList.contains('asignarDietaBtn')) {
+                    const dietaId = event.target.getAttribute('data-dieta-id');
+                    asignarDietaACliente(dietaId);
+                } else if (event.target.classList.contains('editarDietaBtn')) {
+                    const dietaId = event.target.getAttribute('data-dieta-id');
+                    editarDieta(dietaId);
+                }
+            });
+
+            // Configurar búsqueda de dietas
+            const inputBuscarDieta = document.querySelector('#diets .input-group input');
+            if (inputBuscarDieta) {
+                inputBuscarDieta.addEventListener('input', function() {
+                    buscarDietas(this.value);
+                });
+            }
+        }
+
+        // Función para agregar una nueva comida al formulario
+        function agregarNuevaComida() {
+            const comidasContainer = document.getElementById('comidasContainer');
+            const comidaItems = comidasContainer.querySelectorAll('.comida-item');
+            const nuevoIndice = comidaItems.length;
+            
+            const nuevaComida = document.createElement('div');
+            nuevaComida.className = 'comida-item card mb-3';
+            nuevaComida.innerHTML = `
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">Comida #${nuevoIndice + 1}</h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger eliminar-comida">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Tipo de Comida</label>
+                        <select class="form-select" name="comidas[${nuevoIndice}][tipoComida]">
+                            <option value="Desayuno">Desayuno</option>
+                            <option value="Almuerzo">Almuerzo</option>
+                            <option value="Cena">Cena</option>
+                            <option value="Merienda">Merienda</option>
+                            <option value="Snack">Snack</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" name="comidas[${nuevoIndice}][descripcion]" rows="2" placeholder="Detalle de alimentos y cantidades"></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Calorías Estimadas</label>
+                        <input type="number" class="form-control" name="comidas[${nuevoIndice}][caloriasEstimadas]" placeholder="Ej: 500">
+                    </div>
+                </div>
+            `;
+            
+            comidasContainer.appendChild(nuevaComida);
+            
+            // Agregar event listener para eliminar comida
+            nuevaComida.querySelector('.eliminar-comida').addEventListener('click', function() {
+                nuevaComida.remove();
+                // Reindexar las comidas restantes
+                reindexarComidas();
+            });
+        }
+
+        // Función para reindexar las comidas después de eliminar una
+        function reindexarComidas() {
+            const comidasContainer = document.getElementById('comidasContainer');
+            const comidaItems = comidasContainer.querySelectorAll('.comida-item');
+            
+            comidaItems.forEach((comida, index) => {
+                // Actualizar el título
+                const titulo = comida.querySelector('h6');
+                if (titulo) {
+                    titulo.textContent = `Comida #${index + 1}`;
+                }
+                
+                // Actualizar los nombres de los campos
+                const campos = comida.querySelectorAll('select, textarea, input');
+                campos.forEach(campo => {
+                    const nombreActual = campo.getAttribute('name');
+                    if (nombreActual) {
+                        const nuevoNombre = nombreActual.replace(/comidas\[\d+\]/, `comidas[${index}]`);
+                        campo.setAttribute('name', nuevoNombre);
+                    }
+                });
+            });
+        }
+
+        // Función para crear una nueva dieta
+        function crearNuevaDieta(event) {
+            event.preventDefault();
+            console.log('Creando nueva dieta...');
+            const form = document.getElementById('nuevaDietaForm');
+            const formData = new FormData(form);
+            
+            // Convertir FormData a objeto JSON
+            const dieta = {
+                entrenadorId: formData.get('entrenadorId'),
+                nombre: formData.get('nombre'),
+                descripcion: formData.get('descripcion'),
+                fechaInicio: formData.get('fechaInicio'),
+                fechaFin: formData.get('fechaFin'),
+                comidas: []
+            };
+            
+            // Extraer las comidas del formulario
+            const comidasContainer = document.getElementById('comidasContainer');
+            const comidaItems = comidasContainer.querySelectorAll('.comida-item');
+            
+            comidaItems.forEach((comida, index) => {
+                const tipoComida = formData.get(`comidas[${index}][tipoComida]`);
+                const descripcion = formData.get(`comidas[${index}][descripcion]`);
+                const caloriasEstimadas = formData.get(`comidas[${index}][caloriasEstimadas]`);
+                
+                if (tipoComida && descripcion) {
+                    dieta.comidas.push({
+                        tipoComida,
+                        descripcion,
+                        caloriasEstimadas: caloriasEstimadas ? parseInt(caloriasEstimadas) : 0
+                    });
+                }
+            });
+            
+            // Validar los datos
+            if (!dieta.nombre) {
+                mostrarAlerta('Por favor ingrese un nombre para el plan nutricional', 'warning');
+                return false;
+            }
+            
+            if (dieta.comidas.length === 0) {
+                mostrarAlerta('Debe agregar al menos una comida al plan nutricional', 'warning');
+                return false;
+            }
+            
+            console.log('Datos de dieta a enviar:', dieta);
+            
+            // Enviar los datos al servidor
+            fetch('/dietas/crear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dieta)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al crear el plan nutricional');
+                }
+                return response.json();
+            })
+            .then(data => {
+                mostrarAlerta('Plan nutricional creado exitosamente', 'success');
+                form.reset();
+                // Limpiar las comidas excepto la primera
+                const comidasContainer = document.getElementById('comidasContainer');
+                const comidaItems = comidasContainer.querySelectorAll('.comida-item');
+                for (let i = 1; i < comidaItems.length; i++) {
+                    comidaItems[i].remove();
+                }
+                // Actualizar la tabla de dietas
+                actualizarTablaDietas();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarAlerta('Error al crear el plan nutricional: ' + error.message, 'danger');
+            });
+            
+            return false;
+        }
+
+        // Función para actualizar la tabla de dietas
+        function actualizarTablaDietas() {
+            console.log('Actualizando tabla de dietas...');
+            const entrenadorId = document.querySelector('input[name="entrenadorId"]').value;
+            
+            fetch(`/dietas/entrenador/${entrenadorId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener planes nutricionales');
+                }
+                return response.json();
+            })
+            .then(dietas => {
+                console.log('Dietas obtenidas:', dietas);
+                const tablaDietas = document.getElementById('dietasTableBody');
+                if (!tablaDietas) {
+                    console.error('No se encontró el elemento dietasTableBody');
+                    return;
+                }
+                
+                // Limpiar la tabla
+                tablaDietas.innerHTML = '';
+                
+                if (dietas.length === 0) {
+                    tablaDietas.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center">No hay planes nutricionales disponibles</td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                // Agregar las dietas a la tabla
+                dietas.forEach(dieta => {
+                    const fechaInicio = dieta.fechaInicio ? new Date(dieta.fechaInicio).toLocaleDateString() : 'No definida';
+                    const fechaFin = dieta.fechaFin ? new Date(dieta.fechaFin).toLocaleDateString() : 'No definida';
+                    const numComidas = dieta.comidas ? dieta.comidas.length : 0;
+                    
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${dieta.nombre}</td>
+                        <td>${dieta.descripcion || 'Sin descripción'}</td>
+                        <td>${fechaInicio}</td>
+                        <td>${fechaFin}</td>
+                        <td>${numComidas} comidas</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary me-2 verDietaBtn" data-dieta-id="${dieta._id}">Ver</button>
+                            <button class="btn btn-sm btn-success asignarDietaBtn" data-dieta-id="${dieta._id}">Asignar</button>
+                            <button class="btn btn-sm btn-warning editarDietaBtn" data-dieta-id="${dieta._id}">Editar</button>
+                        </td>
+                    `;
+                    
+                    tablaDietas.appendChild(fila);
+                });
+            })
+            .catch(error => {
+                console.error('Error al obtener planes nutricionales:', error);
+                mostrarAlerta('Error al obtener planes nutricionales: ' + error.message, 'danger');
+            });
+        }
+
+        // Función para ver el detalle de una dieta
+        function verDetalleDieta(dietaId) {
+            fetch(`/dietas/${dietaId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener el detalle del plan nutricional');
+                }
+                return response.json();
+            })
+            .then(dieta => {
+                // Llenar el modal con los detalles de la dieta
+                document.getElementById('detalleDietaNombre').textContent = dieta.nombre;
+                document.getElementById('detalleDietaDescripcion').textContent = dieta.descripcion || 'Sin descripción';
+                document.getElementById('detalleDietaFechaInicio').textContent = dieta.fechaInicio ? new Date(dieta.fechaInicio).toLocaleDateString() : 'No definida';
+                document.getElementById('detalleDietaFechaFin').textContent = dieta.fechaFin ? new Date(dieta.fechaFin).toLocaleDateString() : 'No definida';
+                
+                // Mostrar información del cliente si está asignado
+                const clienteElement = document.getElementById('detalleDietaCliente');
+                if (dieta.clienteId) {
+                    const cliente = dieta.clienteId;
+                    clienteElement.textContent = `${cliente.nombre} ${cliente.apellido} (${cliente.correo})`;
+                } else {
+                    clienteElement.textContent = 'No asignado a ningún cliente';
+                }
+                
+                // Llenar la tabla de comidas
+                const comidasTableBody = document.getElementById('detalleDietaComidas');
+                comidasTableBody.innerHTML = '';
+                
+                if (dieta.comidas && dieta.comidas.length > 0) {
+                    dieta.comidas.forEach(comida => {
+                        const fila = document.createElement('tr');
+                        fila.innerHTML = `
+                            <td>${comida.tipoComida}</td>
+                            <td>${comida.descripcion}</td>
+                            <td>${comida.caloriasEstimadas || 0} kcal</td>
+                        `;
+                        comidasTableBody.appendChild(fila);
+                    });
+                } else {
+                    comidasTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="3" class="text-center">No hay comidas registradas</td>
+                        </tr>
+                    `;
+                }
+                
+                // Mostrar el modal
+                const modal = new bootstrap.Modal(document.getElementById('verDietaModal'));
+                modal.show();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarAlerta('Error al obtener el detalle del plan nutricional: ' + error.message, 'danger');
+            });
+        }
+
+        // Función para asignar una dieta a un cliente
+        function asignarDietaACliente(dietaId) {
+            // Obtener información de la dieta para mostrarla en el modal
+            fetch(`/dietas/${dietaId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener información del plan nutricional');
+                }
+                return response.json();
+            })
+            .then(dieta => {
+                // Guardar el ID de la dieta y mostrar su nombre en el modal
+                document.getElementById('dietaId').value = dietaId;
+                document.getElementById('dietaNombre').value = dieta.nombre;
+                
+                // Cargar la lista de clientes
+                cargarClientesParaAsignar();
+                
+                // Mostrar el modal
+                const modal = new bootstrap.Modal(document.getElementById('asignarDietaModal'));
+                modal.show();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarAlerta('Error al preparar la asignación del plan nutricional: ' + error.message, 'danger');
+            });
+        }
+        
+        // Función para cargar los clientes disponibles para asignar una dieta
+        function cargarClientesParaAsignar() {
+            const clientesTableBody = document.getElementById('clientesTableBody');
+            clientesTableBody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> Cargando clientes...</td></tr>';
+            
+            fetch('/entrenadores/clientes')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener la lista de clientes');
+                }
+                return response.json();
+            })
+            .then(clientes => {
+                clientesTableBody.innerHTML = '';
+                
+                if (clientes.length === 0) {
+                    clientesTableBody.innerHTML = '<tr><td colspan="5" class="text-center">No hay clientes disponibles</td></tr>';
+                    return;
+                }
+                
+                clientes.forEach(cliente => {
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${cliente.nombre || 'N/A'}</td>
+                        <td>${cliente.apellido || 'N/A'}</td>
+                        <td>${cliente.correo || 'N/A'}</td>
+                        <td>${cliente.objetivo || 'No especificado'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success asignarAClienteBtn" data-cliente-id="${cliente.usuarioId}">
+                                <i class="fas fa-check me-1"></i>Asignar
+                            </button>
+                        </td>
+                    `;
+                    clientesTableBody.appendChild(fila);
+                });
+                
+                // Agregar event listeners a los botones de asignar
+                document.querySelectorAll('.asignarAClienteBtn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const clienteId = this.getAttribute('data-cliente-id');
+                        const dietaId = document.getElementById('dietaId').value;
+                        confirmarAsignacionDieta(dietaId, clienteId);
+                    });
+                });
+                
+                // Configurar la búsqueda de clientes
+                document.getElementById('buscarClienteInput').addEventListener('input', function() {
+                    const busqueda = this.value.toLowerCase().trim();
+                    const filas = document.querySelectorAll('#clientesTableBody tr');
+                    
+                    filas.forEach(fila => {
+                        const celdas = Array.from(fila.querySelectorAll('td:not(:last-child)'));
+                        const coincide = celdas.some(celda => {
+                            return celda.textContent.toLowerCase().includes(busqueda);
+                        });
+                        
+                        fila.style.display = coincide ? '' : 'none';
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                clientesTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error al cargar clientes: ${error.message}</td></tr>`;
+            });
+        }
+        
+        // Función para confirmar y realizar la asignación de la dieta al cliente
+        function confirmarAsignacionDieta(dietaId, clienteId) {
+            if (confirm('¿Estás seguro de asignar este plan nutricional al cliente seleccionado?')) {
+                // Realizar la asignación mediante la API
+                fetch('/dietas/asignar', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ dietaId, clienteId })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al asignar el plan nutricional');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Cerrar el modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('asignarDietaModal'));
+                    modal.hide();
+                    
+                    // Mostrar mensaje de éxito
+                    mostrarAlerta('Plan nutricional asignado correctamente', 'success');
+                    
+                    // Actualizar la tabla de dietas
+                    actualizarTablaDietas();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    mostrarAlerta('Error al asignar el plan nutricional: ' + error.message, 'danger');
+                });
+            }
+        }
+
+        // Función para editar una dieta
+        function editarDieta(dietaId) {
+            // Aquí podrías redirigir a una página de edición o mostrar un modal
+            // Por ahora, solo mostraremos una alerta
+            alert('Funcionalidad de editar plan nutricional en desarrollo. DietaID: ' + dietaId);
+        }
+
+        // Función para buscar dietas
+        function buscarDietas(busqueda) {
+            busqueda = busqueda.toLowerCase().trim();
+            const filas = document.querySelectorAll('#dietasTableBody tr');
+            
+            // Si la búsqueda está vacía, mostrar todas las filas
+            if (busqueda === '') {
+                filas.forEach(fila => {
+                    fila.style.display = '';
+                });
+                return;
+            }
+            
+            // Buscar en cada fila
+            filas.forEach(fila => {
+                // Obtener el texto de cada celda individualmente (excepto la última que contiene botones)
+                const celdas = Array.from(fila.querySelectorAll('td:not(:last-child)'));
+                
+                // Verificar si alguna celda contiene el texto de búsqueda
+                const coincide = celdas.some(celda => {
+                    const texto = celda.textContent.toLowerCase().trim();
+                    return texto.includes(busqueda);
+                });
+                
+                // Mostrar u ocultar la fila según el resultado
+                if (coincide) {
+                    fila.style.display = '';
+                    // Resaltar el texto que coincide
+                    celdas.forEach(celda => {
+                        const texto = celda.textContent;
+                        const textoLower = texto.toLowerCase();
+                        if (textoLower.includes(busqueda)) {
+                            const index = textoLower.indexOf(busqueda);
+                            const parteAntes = texto.substring(0, index);
+                            const parteCoincidente = texto.substring(index, index + busqueda.length);
+                            const parteDespues = texto.substring(index + busqueda.length);
+                            celda.innerHTML = `${parteAntes}<span class="highlight">${parteCoincidente}</span>${parteDespues}`;
+                        }
+                    });
+                } else {
+                    fila.style.display = 'none';
+                }
+            });
+        }
+    </script>
+    
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <!-- Sistema de Notificaciones -->
+    <script src="/js/notifications.js"></script>
+    <script>
+        // Pasar el ID del entrenador al sistema de notificaciones
+        window.userId = '<%= idEntrenador %>';
     </script>
 </body>
+
 </html>

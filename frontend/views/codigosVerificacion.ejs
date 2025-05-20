@@ -1,0 +1,124 @@
+<!-- Secciu00f3n de Cu00f3digos de Verificaciu00f3n -->
+<div class="tab-pane fade" id="verification-codes-content" role="tabpanel">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Cu00f3digos de Verificaciu00f3n</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateCodeModal">
+                <i class="fas fa-plus-circle me-1"></i> Generar Nuevo Cu00f3digo
+            </button>
+        </div>
+    </div>
+
+    <!-- Cu00f3digos de Verificaciu00f3n Cards -->
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span><i class="fas fa-key me-2"></i>Cu00f3digos Generados</span>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-light active" data-filter="all">Todos</button>
+                        <button class="btn btn-sm btn-outline-light" data-filter="activo">Activos</button>
+                        <button class="btn btn-sm btn-outline-light" data-filter="usado">Usados</button>
+                        <button class="btn btn-sm btn-outline-light" data-filter="expirado">Expirados</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <% if (codigosVerificacion && codigosVerificacion.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Cu00f3digo</th>
+                                        <th>Tipo</th>
+                                        <th>Fecha Creaciu00f3n</th>
+                                        <th>Fecha Expiraciu00f3n</th>
+                                        <th>Estado</th>
+                                        <th>Usado Por</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% codigosVerificacion.forEach(codigo => { %>
+                                        <tr class="code-row" data-status="<%= codigo.estado %>">
+                                            <td>
+                                                <span class="verification-code"><%= codigo.codigo %></span>
+                                            </td>
+                                            <td><%= codigo.tipoUsuario %></td>
+                                            <td><%= new Date(codigo.fechaCreacion).toLocaleString() %></td>
+                                            <td><%= new Date(codigo.fechaExpiracion).toLocaleString() %></td>
+                                            <td>
+                                                <% if (codigo.estado === 'activo') { %>
+                                                    <span class="badge badge-custom badge-success">Activo</span>
+                                                <% } else if (codigo.estado === 'usado') { %>
+                                                    <span class="badge badge-custom badge-info">Usado</span>
+                                                <% } else { %>
+                                                    <span class="badge badge-custom badge-secondary">Expirado</span>
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <% if (codigo.usadoPor) { %>
+                                                    <%= codigo.usadoPor.nombre %> <%= codigo.usadoPor.apellido %>
+                                                <% } else { %>
+                                                    -
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-info copy-code" data-code="<%= codigo.codigo %>">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> No hay cu00f3digos de verificaciu00f3n generados.
+                            <button class="btn btn-sm btn-primary ms-3" data-bs-toggle="modal" data-bs-target="#generateCodeModal">
+                                Generar Cu00f3digo
+                            </button>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Generar Cu00f3digo de Verificaciu00f3n -->
+<div class="modal fade" id="generateCodeModal" tabindex="-1" aria-labelledby="generateCodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="generateCodeModalLabel"><i class="fas fa-key me-2"></i>Generar Cu00f3digo de Verificaciu00f3n</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/admin/codigos/generar" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="adminId" value="<%= admin._id %>">
+                    
+                    <div class="mb-3">
+                        <label for="tipoUsuario" class="form-label">Tipo de Usuario</label>
+                        <select class="form-select" id="tipoUsuario" name="tipoUsuario" required>
+                            <option value="entrenador" selected>Entrenador</option>
+                            <option value="cliente">Cliente</option>
+                        </select>
+                        <div class="form-text">Seleccione el tipo de usuario para el que se generaru00e1 el cu00f3digo.</div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        El cu00f3digo generado estaru00e1 activo por 7 du00edas y solo podru00e1 ser utilizado una vez.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-1"></i> Generar Cu00f3digo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

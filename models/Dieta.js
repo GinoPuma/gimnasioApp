@@ -1,19 +1,65 @@
 const mongoose = require('mongoose');
 
 const dietaSchema = new mongoose.Schema({
-    clienteId: { type: mongoose.Schema.Types.ObjectId, ref: 'clientes' },
-    entrenadorId: { type: mongoose.Schema.Types.ObjectId, ref: 'entrenadores' },
-    nombre: String,
-    descripcion: String,
-    fechaInicio: Date,
-    fechaFin: Date,
+    clienteId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'clientes',
+        required: false
+    },
+    entrenadorId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'entrenadores',
+        required: true
+    },
+    nombre: { 
+        type: String, 
+        required: true,
+        trim: true
+    },
+    descripcion: { 
+        type: String, 
+        required: false,
+        default: ''
+    },
+    fechaInicio: { 
+        type: Date, 
+        default: Date.now
+    },
+    fechaFin: { 
+        type: Date,
+        required: false
+    },
     comidas: [
       {
-        tipoComida: String,
-        descripcion: String,
-        caloriasEstimadas: Number
+        tipoComida: { 
+            type: String, 
+            required: true,
+            enum: ['Desayuno', 'Almuerzo', 'Cena', 'Merienda', 'Snack']
+        },
+        descripcion: { 
+            type: String, 
+            required: true
+        },
+        caloriasEstimadas: { 
+            type: Number, 
+            default: 0
+        }
       }
-    ]
+    ],
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+// Middleware para actualizar la fecha de modificaciu00f3n
+dietaSchema.pre('save', function(next) {
+    this.updatedAt = Date.now();
+    next();
 });
   
 module.exports = mongoose.model('dietas', dietaSchema);

@@ -10,7 +10,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/clientDashboard.css">
-
+    <link rel="stylesheet" href="/css/notifications.css">
 </head>
 
 <body>
@@ -55,7 +55,8 @@
                     </div>
                     <div class="stat-item">
                         <h3>IMC</h3>
-                        <p>23.1</p>
+                        <p id="imc-value">23.1</p>
+                        <button id="calcular-imc-btn" class="btn btn-sm" style="margin-top: 5px; font-size: 0.8rem; padding: 3px 8px;">Calcular IMC</button>
                     </div>
                 </div>
 
@@ -66,10 +67,32 @@
             </div>
 
             <div class="card">
-                <h2><i class="fas fa-dumbbell"></i> Rutina Actual</h2>
-                <p>Tu entrenador ha preparado una rutina especial para esta semana enfocada en fuerza y resistencia.</p>
-                <p><strong>Próxima sesión:</strong> Piernas y Core - Hoy 18:00</p>
-                <a href="/clientes/<%= idCliente %>/rutinas" class="btn">Ver rutina completa</a>
+                <h2><i class="fas fa-dumbbell"></i> Mis Rutinas</h2>
+                <% if (typeof rutinas !== 'undefined' && rutinas && rutinas.length > 0) { %>
+                    <p>Tu entrenador te ha asignado <%= rutinas.length %> rutina(s).</p>
+                    <p><strong>Rutina actual:</strong> <%= rutinas[0].nombre %></p>
+                <% } else { %>
+                    <p>Tu entrenador aún no te ha asignado ninguna rutina.</p>
+                <% } %>
+                <a href="/rutinas/cliente/<%= idCliente %>" class="btn">Ver mis rutinas</a>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-user-tie"></i> Mi Entrenador</h2>
+                <% if (typeof entrenador !== 'undefined' && entrenador) { %>
+                    <p>Tu entrenador asignado es <strong><%= entrenador.nombre %> <%= entrenador.apellido %></strong>.</p>
+                    <p><strong>Especialidad:</strong> <%= entrenador.especialidad || 'General' %></p>
+                    <p><strong>Contacto:</strong> <%= entrenador.correo %></p>
+                    <div class="action-buttons" style="margin-top: 15px;">
+                        <a href="/chat/cliente/<%= idCliente %>" class="btn" style="background-color: #4CAF50; color: white;">
+                            <i class="fas fa-comments"></i> Chat con mi entrenador
+                        </a>
+                    </div>
+                    <a href="/mientrenador/<%= idCliente %>/entrenador" class="btn">Ver perfil completo</a>
+                <% } else { %>
+                    <p>Aún no tienes un entrenador asignado. Selecciona uno para comenzar tu entrenamiento personalizado.</p>
+                    <button id="seleccionarEntrenadorBtn" class="btn">Seleccionar Entrenador</button>
+                <% } %>
             </div>
 
             <div class="card">
@@ -112,7 +135,182 @@
         <p>&copy; 2025 GimnasioApp. Todos los derechos reservados.</p>
         <p>Transformando vidas a través del fitness</p>
     </footer>
+
+    <!-- Modal para calcular IMC -->
+    <div id="imc-modal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6);">
+        <div class="modal-content" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); margin: 10% auto; padding: 30px; border: none; width: 90%; max-width: 450px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-family: 'Poppins', sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #2c3e50; font-weight: 600; font-size: 1.8rem;">Calcula tu IMC</h2>
+                <span class="close" style="color: #2c3e50; font-size: 28px; font-weight: bold; cursor: pointer; transition: color 0.3s;">&times;</span>
+            </div>
+            
+            <div style="background-color: rgba(255,255,255,0.7); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+                <p style="margin-top: 0; color: #34495e; font-size: 0.95rem;">El Índice de Masa Corporal (IMC) es un indicador que relaciona tu peso y altura para evaluar tu estado nutricional.</p>
+                
+                <div style="margin-bottom: 20px;">
+                    <label for="peso" style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 500;">Peso (kg):</label>
+                    <div style="position: relative;">
+                        <input type="number" id="peso" step="0.1" min="30" max="300" style="width: 100%; padding: 12px 15px; border: 2px solid #a4b0be; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s; background-color: white;">
+                        <span style="position: absolute; right: 15px; top: 12px; color: #7f8c8d;">kg</span>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 25px;">
+                    <label for="altura" style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 500;">Altura (cm):</label>
+                    <div style="position: relative;">
+                        <input type="number" id="altura" step="1" min="100" max="250" style="width: 100%; padding: 12px 15px; border: 2px solid #a4b0be; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s; background-color: white;">
+                        <span style="position: absolute; right: 15px; top: 12px; color: #7f8c8d;">cm</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="calcular-btn" class="btn" style="width: 100%; padding: 14px; border: none; border-radius: 8px; background: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%); color: white; font-weight: 600; font-size: 1.1rem; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);">Calcular mi IMC</button>
+            
+            <div id="resultado-imc" style="display: none; margin-top: 25px; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <div style="margin-bottom: 10px;">
+                    <span style="font-size: 2.5rem; font-weight: 700; line-height: 1;" id="valor-imc"></span>
+                </div>
+                <p id="categoria-imc" style="margin: 10px 0 0; font-size: 1.1rem; font-weight: 500;"></p>
+                <p style="margin-top: 15px; font-size: 0.9rem; color: #555;">Recuerda que el IMC es solo un indicador. Consulta con un profesional para una evaluación completa.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para seleccionar entrenador -->
+    <div id="entrenador-modal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6);">
+        <div class="modal-content" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); margin: 10% auto; padding: 30px; border: none; width: 90%; max-width: 600px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-family: 'Poppins', sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #2c3e50; font-weight: 600; font-size: 1.8rem;">Selecciona tu Entrenador</h2>
+                <span class="close-entrenador-modal" style="color: #2c3e50; font-size: 28px; font-weight: bold; cursor: pointer; transition: color 0.3s;">&times;</span>
+            </div>
+            
+            <div style="background-color: rgba(255,255,255,0.7); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+                <p style="margin-top: 0; color: #34495e; font-size: 0.95rem;">Selecciona un entrenador para comenzar tu entrenamiento personalizado. Esta selección es permanente y no podrás cambiarla después.</p>
+                
+                <div id="entrenadores-container" style="margin-top: 20px;">
+                    <p>Cargando entrenadores disponibles...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="/js/clientDashboard.js"></script>
+    
+    <script>
+        // Funcionalidad para el modal de selección de entrenador
+        document.addEventListener('DOMContentLoaded', function() {
+            const seleccionarBtn = document.getElementById('seleccionarEntrenadorBtn');
+            const entrenadorModal = document.getElementById('entrenador-modal');
+            const closeEntrenadorModal = document.querySelector('.close-entrenador-modal');
+            const entrenadoresContainer = document.getElementById('entrenadores-container');
+            
+            if (seleccionarBtn) {
+                seleccionarBtn.addEventListener('click', function() {
+                    entrenadorModal.style.display = 'block';
+                    cargarEntrenadores();
+                });
+            }
+            
+            if (closeEntrenadorModal) {
+                closeEntrenadorModal.addEventListener('click', function() {
+                    entrenadorModal.style.display = 'none';
+                });
+            }
+            
+            // Cerrar modal al hacer clic fuera de él
+            window.addEventListener('click', function(event) {
+                if (event.target === entrenadorModal) {
+                    entrenadorModal.style.display = 'none';
+                }
+            });
+            
+            // Función para cargar entrenadores disponibles
+            function cargarEntrenadores() {
+                fetch('/api/entrenadores/listar')
+                    .then(response => response.json())
+                    .then(entrenadores => {
+                        if (entrenadores.length === 0) {
+                            entrenadoresContainer.innerHTML = '<p>No hay entrenadores disponibles en este momento.</p>';
+                            return;
+                        }
+                        
+                        let html = '<div class="entrenadores-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">';
+                        
+                        entrenadores.forEach(entrenador => {
+                            const nombre = entrenador.usuario ? `${entrenador.usuario.nombre} ${entrenador.usuario.apellido}` : 'Entrenador';
+                            const especialidad = entrenador.especialidad || 'Entrenamiento general';
+                            const experiencia = entrenador.experienciaAnios ? `${entrenador.experienciaAnios} años de experiencia` : '';
+                            
+                            html += `
+                                <div class="entrenador-card" style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                                    <div style="font-weight: bold; font-size: 1.2rem; margin-bottom: 10px;">${nombre}</div>
+                                    <div style="color: #666; margin-bottom: 5px;">Especialidad: ${especialidad}</div>
+                                    <div style="color: #666; margin-bottom: 15px;">${experiencia}</div>
+                                    <button 
+                                        class="seleccionar-entrenador-btn" 
+                                        data-entrenador-id="${entrenador._id}"
+                                        style="background: #0d6efd; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; width: 100%;"
+                                    >
+                                        Seleccionar
+                                    </button>
+                                </div>
+                            `;
+                        });
+                        
+                        html += '</div>';
+                        entrenadoresContainer.innerHTML = html;
+                        
+                        // Agregar event listeners a los botones de selección
+                        document.querySelectorAll('.seleccionar-entrenador-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const entrenadorId = this.getAttribute('data-entrenador-id');
+                                seleccionarEntrenador(entrenadorId);
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error al cargar entrenadores:', error);
+                        entrenadoresContainer.innerHTML = '<p>Error al cargar entrenadores. Inténtalo de nuevo más tarde.</p>';
+                    });
+            }
+            
+            // Función para seleccionar un entrenador
+            function seleccionarEntrenador(entrenadorId) {
+                const clienteId = '<%= idCliente %>';
+                
+                fetch(`/api/clientes/${clienteId}/seleccionar-entrenador`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ entrenadorId })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error || 'Error al seleccionar entrenador'); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert('Entrenador seleccionado correctamente. La página se recargará para mostrar los cambios.');
+                    window.location.reload();
+                })
+                .catch(error => {
+                    alert(error.message || 'Error al seleccionar entrenador. Inténtalo de nuevo más tarde.');
+                });
+            }
+        });
+    </script>
+    
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <!-- Sistema de Notificaciones -->
+    <script src="/js/notifications.js"></script>
+    <script>
+        // Pasar el ID del cliente al sistema de notificaciones
+        window.userId = '<%= idCliente %>';
+    </script>
 </body>
 
 </html>

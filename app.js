@@ -2,6 +2,7 @@ const express = require('express');
 const connection = require('./database/connection');
 const cors = require('cors');
 const path = require('path');
+const session = require('express-session');
 require('dotenv').config();
 
 // Importar el modelo o servicio de ejercicios
@@ -14,6 +15,30 @@ const app = express();
 app.use(cors());
 app.use(express.json());  // Para procesar datos JSON
 app.use(express.urlencoded({ extended: true }));  // Para procesar datos de formularios (x-www-form-urlencoded)
+
+// Configuración de sesiones mejorada
+app.use(session({
+    secret: 'gimnasioAppSecretKey',
+    resave: false,
+    saveUninitialized: false, // Cambiado a false para evitar crear sesiones vacías
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production', // Solo seguro en producción
+        maxAge: 24 * 60 * 60 * 1000, // 24 horas
+        httpOnly: true // Previene acceso desde JavaScript del cliente
+    }
+}));
+
+// Importar middleware de autenticación
+const { cargarDatosUsuario } = require('./middlewares/authMiddleware');
+
+// Middleware para cargar datos del usuario en cada solicitud
+app.use(cargarDatosUsuario);
+
+// Middleware para registrar todas las solicitudes (logging)
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
 
 // Configuración de vistas con EJS
 app.set('view engine', 'ejs');
@@ -46,17 +71,78 @@ app.get('/dietas/:id/dietas', async (req, res) => {
 
 // Ruta para el perfil del entrenador
 app.get('/mientrenador/:id/entrenador', async (req, res) => {
-    const entrenadorId = req.params.id;
+    const clienteId = req.params.id;
     try {
-       
-        const entrenador = {
-            id: entrenadorId,
-            nombre: 'Juan Pérez',  // Esto lo sacarías de la base de datos
-            especialidad: 'Entrenador de fuerza', // Datos de ejemplo
+        // Importar los modelos necesarios
+        const Cliente = require('./models/Cliente');
+        const Entrenador = require('./models/Entrenador');
+        const Usuario = require('./models/Usuario');
+        
+        // Buscar el cliente para obtener el ID del entrenador asignado
+        const cliente = await Cliente.findById(clienteId);
+        
+        if (!cliente || !cliente.entrenadorId) {
+            return res.status(404).send('No tienes un entrenador asignado. Por favor selecciona un entrenador primero.');
+        }
+        
+        // Buscar el entrenador con sus datos de usuario
+        const entrenador = await Entrenador.findById(cliente.entrenadorId).populate('usuarioId');
+        
+        if (!entrenador) {
+            return res.status(404).send('Entrenador no encontrado');
+        }
+        
+        // Buscar los clientes asignados a este entrenador
+        const clientesDelEntrenador = await Cliente.find({ entrenadorId: entrenador._id })
+            .populate('usuarioId', 'nombre apellido');
+            
+        // Buscar las rutinas creadas por este entrenador
+        const Rutina = require('./models/Rutina');
+        const rutinasDelEntrenador = await Rutina.find({ entrenadorId: entrenador._id })
+            .populate('clienteId', 'usuarioId')
+            .populate({
+                path: 'clienteId',
+                populate: {
+                    path: 'usuarioId',
+                    select: 'nombre apellido'
+                }
+            });
+        
+        // Preparar los datos del entrenador para la vista
+        const datosEntrenador = {
+            id: entrenador._id,
+            nombre: entrenador.usuarioId.nombre,
+            apellido: entrenador.usuarioId.apellido,
+            especialidad: entrenador.especialidad || 'Entrenamiento general',
+            descripcion: entrenador.descripcionPerfil || 'Entrenador profesional',
+            correo: entrenador.usuarioId.correo,
+            experiencia: entrenador.experienciaAnios ? `${entrenador.experienciaAnios} años de experiencia` : 'Experiencia profesional',
+            certificaciones: entrenador.certificaciones || [],
+            fechaAsignacion: cliente.fechaAsignacionEntrenador
         };
+        
+        // Preparar los datos de los clientes para la vista
+        const clientesData = clientesDelEntrenador.map(cliente => ({
+            nombre: cliente.usuarioId.nombre,
+            apellido: cliente.usuarioId.apellido,
+            objetivo: cliente.objetivo || 'No especificado'
+        }));
+        
+        // Preparar los datos de las rutinas para la vista
+        const rutinasData = rutinasDelEntrenador.map(rutina => ({
+            nombre: rutina.nombre,
+            descripcion: rutina.descripcion,
+            duracion: rutina.duracionSemanas,
+            clienteNombre: rutina.clienteId && rutina.clienteId.usuarioId ? `${rutina.clienteId.usuarioId.nombre} ${rutina.clienteId.usuarioId.apellido}` : 'Cliente'
+        }));
 
-        res.render('mientrenador', { entrenador });  // Pasamos los datos a la vista
+        res.render('mientrenador', { 
+            entrenador: datosEntrenador,
+            clientes: clientesData,
+            rutinas: rutinasData
+        });
     } catch (error) {
+        console.error('Error cargando el perfil del entrenador:', error);
         res.status(500).send('Error cargando el perfil del entrenador: ' + error.message);
     }
 });
@@ -80,9 +166,40 @@ app.use('/api/rutinas', require('./routes/rutinas'));
 app.use('/api/progresos', require('./routes/progreso'));
 app.use('/api/dietas', require('./routes/dietas'));
 app.use('/api/mensajes', require('./routes/mensajes'));
+app.use('/api', require('./routes/api')); // Nueva ruta para verificar la base de datos
 app.use('/frontend', require('./routes/frontend'));
 
+// Ruta para manejar las rutinas en la interfaz de usuario
+app.use('/rutinas', require('./routes/rutinas'));
+
+// Ruta para manejar los planes nutricionales
+app.use('/dietas', require('./routes/dietas'));
+
+// Ruta para manejar los entrenadores
+app.use('/entrenadores', require('./routes/entrenadores'));
+
+// Rutas para el panel de administración
+app.use('/admin', require('./routes/admin'));
+
+// Rutas para el chat
+app.use('/chat', require('./routes/chat'));
+
+// Configuración de Socket.IO
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require('socket.io');
+const io = new Server(server);
+
+// Configurar Socket.IO
+// Nota: Asegúrate de crear el archivo socket.js si aún no existe
+try {
+    require('./socket')(io);
+} catch (error) {
+    console.error('Error al cargar el módulo de socket:', error.message);
+    console.log('Asegúrate de crear el archivo socket.js en la raíz del proyecto');
+}
+
 // Puerto de escucha
-app.listen(3000, () => {
+server.listen(3000, () => {
     console.log('Aplicación ejecutándose en http://localhost:3000');
 });

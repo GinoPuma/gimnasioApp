@@ -278,17 +278,36 @@
                 socket.emit('writing', username);
             });
             
-            // Escuchar mensajes privados
+            // Variable para rastrear mensajes procesados y evitar duplicaciones
+            const processedMessages = new Set();
+            
+            // Escuchar mensajes privados (mensajes enviados por el usuario actual al receptor)
             socket.on(`chat-${userId}-${receiverId}`, function(message) {
+                // Solo procesar mensajes recibidos (no enviados por el usuario actual)
                 if (message.senderId !== userId) {
-                    addMessage(message, false);
+                    // Crear un ID único para el mensaje basado en su contenido y timestamp
+                    const messageId = `${message.senderId}-${message.timestamp}-${message.message}`;
+                    
+                    // Verificar si ya hemos procesado este mensaje
+                    if (!processedMessages.has(messageId)) {
+                        processedMessages.add(messageId);
+                        addMessage(message, false);
+                    }
                 }
             });
             
-            // Escuchar mensajes desde cualquier remitente (para evitar duplicaciones)
+            // Escuchar mensajes en el canal inverso (mensajes enviados por el receptor al usuario actual)
             socket.on(`chat-${receiverId}-${userId}`, function(message) {
+                // Solo procesar mensajes recibidos (no enviados por el usuario actual)
                 if (message.senderId !== userId) {
-                    addMessage(message, false);
+                    // Crear un ID único para el mensaje basado en su contenido y timestamp
+                    const messageId = `${message.senderId}-${message.timestamp}-${message.message}`;
+                    
+                    // Verificar si ya hemos procesado este mensaje
+                    if (!processedMessages.has(messageId)) {
+                        processedMessages.add(messageId);
+                        addMessage(message, false);
+                    }
                 }
             });
             

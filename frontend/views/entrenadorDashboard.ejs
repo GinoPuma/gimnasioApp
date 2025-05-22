@@ -791,6 +791,18 @@
                                                 <label for="descripcion" class="form-label">Descripción</label>
                                                 <textarea class="form-control" id="descripcion" name="descripcion" rows="2" placeholder="Breve descripción del plan nutricional"></textarea>
                                             </div>
+                                            <div class="mb-3">
+                                                <label for="clienteId" class="form-label">Asignar a Cliente (Opcional)</label>
+                                                <select class="form-select" id="clienteId" name="clienteId">
+                                                    <option value="">Seleccionar cliente (opcional)</option>
+                                                    <% if (typeof clientes !== 'undefined' && clientes && clientes.length > 0) { %>
+                                                        <% clientes.forEach(function(cliente) { %>
+                                                            <option value="<%= cliente._id %>"><%= cliente.nombre %> <%= cliente.apellido %></option>
+                                                        <% }); %>
+                                                    <% } %>
+                                                </select>
+                                                <div class="form-text">Si selecciona un cliente, la dieta se asignará automáticamente.</div>
+                                            </div>
                                             <div class="row">
                                                 <div class="col-md-6 mb-3">
                                                     <label for="fechaInicio" class="form-label">Fecha Inicio</label>
@@ -1572,7 +1584,7 @@
             modal.show();
             
             // Luego cargar los clientes
-            fetch(`/entrenadores/${entrenadorId}/clientes`)
+            fetch(`/entrenadores/clientes`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Error al obtener los clientes');

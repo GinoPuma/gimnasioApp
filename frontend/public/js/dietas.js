@@ -56,6 +56,12 @@ function crearNuevaDieta(event) {
         comidas: comidas
     };
     
+    // Si se seleccionó un cliente, añadir al objeto de datos
+    const clienteId = formData.get('clienteId');
+    if (clienteId && clienteId !== '') {
+        dietaData.clienteId = clienteId;
+    }
+    
     console.log('Enviando datos de dieta:', dietaData);
     
     // Enviar datos al servidor
@@ -250,64 +256,68 @@ function agregarDietaATabla(dieta) {
         });
     }
 }
-
-// Función para mostrar el modal de asignar dieta
 function mostrarModalAsignarDieta(dietaId) {
     console.log('Mostrando modal para asignar dieta:', dietaId);
     
-    // Guardar el ID de la dieta en el campo oculto
-    document.getElementById('dietaId').value = dietaId;
-    
     // Obtener los clientes del entrenador
-    fetch('/entrenadores/clientes')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al obtener los clientes');
-            }
-            return response.json();
-        })
-        .then(clientes => {
-            // Actualizar el modal con la lista de clientes
-            const selectCliente = document.getElementById('clienteParaDieta');
-            selectCliente.innerHTML = '<option value="">Selecciona un cliente</option>';
-            
-            if (clientes && clientes.length > 0) {
+    const entrenadorId = document.querySelector('input[name="entrenadorId"]')?.value;
+    if (!entrenadorId) {
+        console.error('No se pudo obtener el ID del entrenador');
+        mostrarAlerta('Error: No se pudo obtener la información del entrenador', 'danger');
+        return;
+    }
+    
+    // Configurar el modal
+    document.getElementById('dietaId').value = dietaId;
+    document.getElementById('confirmarAsignarDieta').setAttribute('data-dieta-id', dietaId);
+    
+    // Cargar la lista de clientes si no está ya cargada
+    const selectCliente = document.getElementById('clienteParaDieta');
+    if (selectCliente.options.length <= 1) {
+        selectCliente.innerHTML = '<option value="">Cargando clientes...</option>';
+        
+        fetch(`/entrenadores/clientes`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al cargar los clientes');
+                }
+                return response.json();
+            })
+            .then(clientes => {
+                if (!clientes || clientes.length === 0) {
+                    selectCliente.innerHTML = '<option value="">No tienes clientes asignados</option>';
+                    return;
+                }
+                
+                selectCliente.innerHTML = '<option value="">Selecciona un cliente</option>';
                 clientes.forEach(cliente => {
                     const option = document.createElement('option');
                     option.value = cliente._id;
                     option.textContent = `${cliente.nombre} ${cliente.apellido}`;
                     selectCliente.appendChild(option);
                 });
-            } else {
-                const option = document.createElement('option');
-                option.disabled = true;
-                option.selected = true;
-                option.textContent = 'No hay clientes disponibles';
-                selectCliente.appendChild(option);
-            }
-            
-            // Mostrar el modal
-            const modal = new bootstrap.Modal(document.getElementById('asignarDietaModal'));
-            modal.show();
-        })
-        .catch(error => {
-            console.error('Error al obtener clientes:', error);
-            mostrarAlerta('Error: ' + error.message, 'danger');
-        });
+            })
+            .catch(error => {
+                console.error('Error al cargar clientes:', error);
+                selectCliente.innerHTML = '<option value="">Error al cargar clientes</option>';
+                mostrarAlerta('Error al cargar la lista de clientes', 'danger');
+            });
+    }
+    
+    // Mostrar el modal
+    const modal = new bootstrap.Modal(document.getElementById('asignarDietaModal'));
+    modal.show();
 }
-
-// Variable para controlar si ya se está enviando una solicitud de asignación
-let asignandoDieta = false;
 
 // Función para asignar dieta a cliente
 function asignarDietaACliente() {
     // Evitar envíos duplicados
     if (asignandoDieta) {
         console.log('Ya hay una solicitud de asignación en proceso');
-        return;
+        return false;
     }
     
-    // Obtener los datos
+    // Obtener datos del formulario
     const dietaId = document.getElementById('dietaId').value;
     const clienteId = document.getElementById('clienteParaDieta').value;
     

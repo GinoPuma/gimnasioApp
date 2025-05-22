@@ -303,12 +303,21 @@ router.get('/clientes/:id', async (req, res) => {
       .sort({ fechaInicio: -1 });
 
     console.log(`Se encontraron ${rutinas.length} rutinas asignadas al cliente ${cliente._id}`);
+    
+    // Obtener las dietas asignadas al cliente
+    const Dieta = require('../models/Dieta');
+    const dietas = await Dieta.find({ clienteId: cliente._id })
+      .populate('entrenadorId')
+      .sort({ fechaInicio: -1 });
+      
+    console.log(`Se encontraron ${dietas.length} dietas asignadas al cliente ${cliente._id}`);
 
     res.render('clienteDashboard', {
       nombre: cliente.usuarioId.nombre,
       idCliente: cliente._id,
       entrenador: entrenador,
-      rutinas: rutinas
+      rutinas: rutinas,
+      dietas: dietas
     });
   } catch (error) {
     console.error('Error al cargar cliente:', error);

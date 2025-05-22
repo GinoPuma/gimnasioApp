@@ -49,62 +49,36 @@ class RutinaController {
     
     async crearRutina(req, res) {
         try {
-            // Verificar si la solicitud es JSON
-            const isJsonRequest = req.is('application/json');
-            
             // Obtener el ID del entrenador desde el cuerpo de la solicitud
             const entrenadorId = req.body.entrenadorId;
             
             console.log('Datos recibidos para crear rutina:', req.body);
             console.log('ID del entrenador:', entrenadorId);
-            console.log('¿Es solicitud JSON?', isJsonRequest);
             
             if (!entrenadorId) {
                 console.error('Error: No se proporcionó ID de entrenador');
-                
-                if (isJsonRequest) {
-                    return res.status(400).json({ error: 'No se proporcionó ID de entrenador' });
-                }
-                
-                return res.redirect('/frontend/login?error=No se proporcionó ID de entrenador');
+                return res.status(400).json({ error: 'No se proporcionó ID de entrenador' });
             }
             
+            // Crear la rutina
             const nuevaRutina = await rutinaService.crearRutina(req.body);
             console.log('Rutina creada:', nuevaRutina);
             
-            // Si es una solicitud AJAX o JSON, devolver JSON
-            if (isJsonRequest || req.xhr || req.get('Accept')?.includes('application/json')) {
-                return res.status(201).json(nuevaRutina);
-            }
+            // Obtener la rutina completa con todas sus propiedades
+            const rutinaCompleta = await rutinaService.obtenerRutinaPorId(nuevaRutina._id);
+            console.log('Rutina completa obtenida:', rutinaCompleta._id);
             
-            // Para solicitudes normales, redirigir al dashboard
-            // Buscar el usuario asociado al entrenador para redirigir correctamente
-            const Entrenador = require('../models/Entrenador');
-            const entrenador = await Entrenador.findById(entrenadorId);
-            
-            if (entrenador && entrenador.usuarioId) {
-                // Redirigir usando el ID de usuario, no el ID de entrenador
-                return res.redirect(`/frontend/entrenadores/${entrenador.usuarioId}`);
-            } else {
-                // Si no se encuentra el entrenador, redirigir a la página de inicio
-                return res.redirect('/?mensaje=Rutina creada correctamente');
-            }
+            // Devolver la rutina completa como JSON en todos los casos
+            return res.status(201).json(rutinaCompleta);
         } catch (error) {
             console.error('Error al crear rutina:', error);
-            
-            // Si es una solicitud AJAX o JSON, devolver error en formato JSON
-            if (req.is('application/json') || req.xhr || req.get('Accept')?.includes('application/json')) {
-                return res.status(500).json({ error: error.message });
-            }
-            
-            // Para solicitudes normales, redirigir con mensaje de error
-            return res.redirect(`/?error=${encodeURIComponent('Error al crear rutina: ' + error.message)}`);
+            return res.status(500).json({ error: error.message });
         }
     }
 
     async asignarRutina(req, res) {
         try {
-            console.log('Cuerpo de la solicitud:', req.body);
+            console.log('Cuerpo de la solicitud para asignar rutina:', req.body);
             const { rutinaId, clienteId } = req.body;
             
             if (!rutinaId || !clienteId) {
@@ -121,49 +95,81 @@ class RutinaController {
             // Obtener la rutina para verificar el entrenador
             const rutina = await Rutina.findById(rutinaId);
             if (!rutina) {
+                console.error('Rutina no encontrada con ID:', rutinaId);
                 return res.status(404).json({ error: 'Rutina no encontrada' });
             }
+            
+            console.log('Rutina encontrada:', rutina);
             
             // Obtener el cliente para verificar que pertenezca al entrenador
             const cliente = await Cliente.findById(clienteId).populate('usuarioId', 'nombre apellido');
             if (!cliente) {
+                console.error('Cliente no encontrado con ID:', clienteId);
                 return res.status(404).json({ error: 'Cliente no encontrado' });
             }
             
+            console.log('Cliente encontrado:', cliente._id, cliente.usuarioId.nombre);
+            
             // Verificar que el cliente esté asignado al entrenador que creó la rutina
             if (cliente.entrenadorId && cliente.entrenadorId.toString() !== rutina.entrenadorId.toString()) {
+                console.error('Verificación de entrenador fallida:', {
+                    entrenadorCliente: cliente.entrenadorId.toString(),
+                    entrenadorRutina: rutina.entrenadorId.toString()
+                });
                 return res.status(403).json({ 
                     error: 'No puedes asignar rutinas a clientes que no están asignados a ti' 
                 });
             }
             
-            const rutinaActualizada = await rutinaService.asignarRutina(rutinaId, clienteId);
-            console.log('Rutina actualizada:', rutinaActualizada);
-            
-            // Preparar respuesta con datos más completos
-            const respuesta = {
-                mensaje: `Rutina '${rutina.nombre}' asignada correctamente al cliente ${cliente.usuarioId.nombre} ${cliente.usuarioId.apellido}`,
-                rutina: {
-                    id: rutinaActualizada._id,
-                    nombre: rutinaActualizada.nombre,
-                    descripcion: rutinaActualizada.descripcion,
-                    duracionSemanas: rutinaActualizada.duracionSemanas
-                },
-                cliente: {
-                    id: cliente._id,
-                    nombre: cliente.usuarioId.nombre,
-                    apellido: cliente.usuarioId.apellido
-                },
-                fechaAsignacion: new Date()
-            };
-            
-            if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
-                return res.json(respuesta);
+            try {
+                // Método 1: Actualizar directamente con findByIdAndUpdate
+                const rutinaActualizadaDirecta = await Rutina.findByIdAndUpdate(
+                    rutinaId,
+                    { clienteId: clienteId },
+                    { new: true }
+                );
+                console.log('Rutina actualizada directamente:', rutinaActualizadaDirecta);
+                
+                // Método 2: Actualizar el objeto y guardar
+                rutina.clienteId = clienteId;
+                await rutina.save();
+                console.log('Rutina guardada con save():', rutina);
+                
+                // Verificar que la asignación se haya realizado correctamente
+                const rutinaVerificacion = await Rutina.findById(rutinaId);
+                console.log('Verificación de asignación:', {
+                    rutinaId: rutinaVerificacion._id,
+                    clienteId: rutinaVerificacion.clienteId
+                });
+                
+                if (!rutinaVerificacion.clienteId || rutinaVerificacion.clienteId.toString() !== clienteId.toString()) {
+                    throw new Error('La asignación no se realizó correctamente');
+                }
+                
+                // Preparar respuesta con datos más completos
+                const respuesta = {
+                    mensaje: `Rutina '${rutina.nombre}' asignada correctamente al cliente ${cliente.usuarioId.nombre} ${cliente.usuarioId.apellido}`,
+                    rutina: {
+                        id: rutina._id,
+                        nombre: rutina.nombre,
+                        descripcion: rutina.descripcion,
+                        duracionSemanas: rutina.duracionSemanas
+                    },
+                    cliente: {
+                        id: cliente._id,
+                        nombre: cliente.usuarioId.nombre,
+                        apellido: cliente.usuarioId.apellido
+                    },
+                    fechaAsignacion: new Date()
+                };
+                
+                // Devolver respuesta JSON
+                return res.status(200).json(respuesta);
+                
+            } catch (updateError) {
+                console.error('Error al actualizar la rutina:', updateError);
+                return res.status(500).json({ error: updateError.message });
             }
-            
-            // Redirigir al dashboard con mensaje de éxito
-            const entrenadorId = req.query.entrenadorId || req.body.entrenadorId || rutina.entrenadorId;
-            return res.redirect(`/frontend/entrenadores/${entrenadorId || 'dashboard'}?mensaje=${encodeURIComponent(respuesta.mensaje)}`);
         } catch (error) {
             console.error('Error al asignar rutina:', error);
             

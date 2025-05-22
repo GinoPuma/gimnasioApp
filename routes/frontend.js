@@ -333,7 +333,13 @@ router.get('/entrenadores/:id', async (req, res) => {
     
     // Obtener las rutinas del entrenador
     const Rutina = require('../models/Rutina');
-    const rutinas = await Rutina.find({ entrenadorId: entrenador._id.toString() });
+    const rutinas = await Rutina.find({ entrenadorId: entrenador._id.toString() })
+      .populate('clienteId');
+      
+    // Obtener las dietas del entrenador
+    const Dieta = require('../models/Dieta');
+    const dietas = await Dieta.find({ entrenadorId: entrenador._id.toString() })
+      .populate('clienteId');
     
     // Obtener los clientes asignados a este entrenador
     const clientes = await Cliente.find({ entrenadorId: entrenador._id })
@@ -357,6 +363,7 @@ router.get('/entrenadores/:id', async (req, res) => {
       nombre: entrenador.usuarioId.nombre,
       idEntrenador: entrenador._id,
       rutinas: rutinas || [], // Pasar las rutinas o un array vacío si no hay
+      dietas: dietas || [], // Pasar las dietas o un array vacío si no hay
       clientes: clientesData || [] // Pasar los clientes asignados
     });
   } catch (error) {

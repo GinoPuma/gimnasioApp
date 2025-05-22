@@ -56,13 +56,13 @@ class NotificationService {
             let senderType = "";
             
             // Buscar si el remitente es un cliente
-            const clienteSender = await Cliente.findOne({ _id: message.senderId }).populate('usuarioId');
+            const clienteSender = await Cliente.findOne({ 'usuarioId': message.senderId }).populate('usuarioId');
             if (clienteSender && clienteSender.usuarioId) {
                 senderName = `${clienteSender.usuarioId.nombre} ${clienteSender.usuarioId.apellido}`;
                 senderType = "cliente";
             } else {
                 // Buscar si el remitente es un entrenador
-                const entrenadorSender = await Entrenador.findOne({ _id: message.senderId }).populate('usuarioId');
+                const entrenadorSender = await Entrenador.findOne({ 'usuarioId': message.senderId }).populate('usuarioId');
                 if (entrenadorSender && entrenadorSender.usuarioId) {
                     senderName = `${entrenadorSender.usuarioId.nombre} ${entrenadorSender.usuarioId.apellido}`;
                     senderType = "entrenador";

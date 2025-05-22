@@ -414,13 +414,14 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="dietas-tab" data-bs-toggle="tab" data-bs-target="#dietas" type="button" role="tab">
+                    <button class="nav-link" id="diets-tab" data-bs-toggle="tab" data-bs-target="#diets" type="button" role="tab">
                         <i class="fas fa-utensils me-2"></i>Dietas
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link" href="/chat/entrenador/<%= idEntrenador %>" role="tab">
+                    <a class="nav-link nav-link-with-badge" href="/chat/entrenador/<%= idEntrenador %>" role="tab">
                         <i class="fas fa-comments me-2"></i>Chat con Clientes
+                        <span class="chat-badge" id="chat-notification-badge" style="display: inline-flex;">0</span>
                     </a>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -649,7 +650,7 @@
                                 </div>
                                 <div class="card-body d-flex align-items-center justify-content-center">
                                     <div class="form-container w-100">
-                                        <form id="nuevaRutinaForm" action="/rutinas/crear" method="POST" onsubmit="return crearNuevaRutina(event)">
+                                        <form id="nuevaRutinaForm" action="javascript:void(0);" method="post">
                                             <input type="hidden" name="entrenadorId" value="<%= idEntrenador %>">
                                             <div class="mb-3">
                                                 <label for="nombre" class="form-label">Nombre de la Rutina</label>
@@ -708,7 +709,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <button type="submit" class="btn btn-primary w-100">Crear Rutina</button>
+                                            <button type="submit" id="crearRutinaBtn" class="btn btn-primary w-100">Crear Rutina</button>
                                         </form>
                                     </div>
                                 </div>
@@ -751,7 +752,7 @@
                                                             </td>
                                                             <td>
                                                                 <a href="/rutinas/<%= rutina._id %>" class="btn btn-sm btn-primary me-2 verRutinaBtn">Ver</a>
-                                                                <a href="/rutinas/<%= rutina._id %>/asignar/<%= idEntrenador %>" class="btn btn-sm btn-success">Asignar</a>
+                                                                <button class="btn btn-sm btn-success asignarRutinaBtn" data-rutina-id="<%= rutina._id %>" data-rutina-nombre="<%= rutina.nombre %>">Asignar</button>
                                                                 <a href="/rutinas/<%= rutina._id %>/editar" class="btn btn-sm btn-warning editarRutinaBtn">Editar</a>
                                                             </td>
                                                         </tr>
@@ -780,7 +781,7 @@
                                 </div>
                                 <div class="card-body d-flex align-items-center justify-content-center">
                                     <div class="form-container w-100">
-                                        <form id="nuevaDietaForm" action="/dietas/crear" method="POST" onsubmit="return crearNuevaDieta(event)">
+                                        <form id="nuevaDietaForm" action="javascript:void(0);" method="post" onsubmit="return crearNuevaDieta(event)">
                                             <input type="hidden" name="entrenadorId" value="<%= idEntrenador %>">
                                             <div class="mb-3">
                                                 <label for="nombre" class="form-label">Nombre del Plan</label>
@@ -830,7 +831,7 @@
                                                     <i class="fas fa-plus me-2"></i>Agregar Comida
                                                 </button>
                                             </div>
-                                            <button type="submit" class="btn btn-primary w-100 mt-3">Crear Plan Nutricional</button>
+                                            <button type="submit" id="crearDietaBtn" class="btn btn-primary w-100 mt-3">Crear Plan Nutricional</button>
                                         </form>
                                     </div>
                                 </div>
@@ -855,6 +856,7 @@
                                                     <th>Fecha Inicio</th>
                                                     <th>Fecha Fin</th>
                                                     <th>Comidas</th>
+                                                    <th>Cliente Asignado</th>
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
@@ -866,17 +868,39 @@
                                                             <td><%= dieta.descripcion || 'Sin descripción' %></td>
                                                             <td><%= dieta.fechaInicio ? new Date(dieta.fechaInicio).toLocaleDateString() : 'No definida' %></td>
                                                             <td><%= dieta.fechaFin ? new Date(dieta.fechaFin).toLocaleDateString() : 'No definida' %></td>
-                                                            <td><%= dieta.comidas ? dieta.comidas.length : 0 %> comidas</td>
                                                             <td>
-                                                                <button class="btn btn-sm btn-primary me-2 verDietaBtn" data-dieta-id="<%= dieta._id %>">Ver</button>
-                                                                <button class="btn btn-sm btn-success asignarDietaBtn" data-dieta-id="<%= dieta._id %>">Asignar</button>
-                                                                <button class="btn btn-sm btn-warning editarDietaBtn" data-dieta-id="<%= dieta._id %>">Editar</button>
+                                                                <% if (dieta.comidas && dieta.comidas.length > 0) { %>
+                                                                    <span class="badge bg-info"><%= dieta.comidas.length %> comidas</span>
+                                                                    <button class="btn btn-sm btn-outline-info ms-1" data-bs-toggle="tooltip" title="<% dieta.comidas.forEach(function(comida, index) { %><%= comida.tipoComida %><% if (index < dieta.comidas.length - 1) { %>, <% } %><% }); %>">
+                                                                        <i class="fas fa-info-circle"></i>
+                                                                    </button>
+                                                                <% } else { %>
+                                                                    <span class="badge bg-secondary">Sin comidas</span>
+                                                                <% } %>
+                                                            </td>
+                                                            <td>
+                                                                <% if (dieta.clienteId && dieta.clienteId.nombre) { %>
+                                                                    <%= dieta.clienteId.nombre %> <%= dieta.clienteId.apellido || '' %>
+                                                                <% } else { %>
+                                                                    <span class="badge bg-warning">No asignada</span>
+                                                                <% } %>
+                                                            </td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-primary me-2 verDietaBtn" data-dieta-id="<%= dieta._id %>">
+                                                                    <i class="fas fa-eye me-1"></i>Ver
+                                                                </button>
+                                                                <button class="btn btn-sm btn-success asignarDietaBtn" data-dieta-id="<%= dieta._id %>" <%= dieta.clienteId ? 'disabled' : '' %>>
+                                                                    <i class="fas fa-user-plus me-1"></i>Asignar
+                                                                </button>
+                                                                <button class="btn btn-sm btn-warning editarDietaBtn" data-dieta-id="<%= dieta._id %>">
+                                                                    <i class="fas fa-edit me-1"></i>Editar
+                                                                </button>
                                                             </td>
                                                         </tr>
                                                     <% }); %>
                                                 <% } else { %>
                                                     <tr>
-                                                        <td colspan="6" class="text-center">No hay planes nutricionales disponibles</td>
+                                                        <td colspan="7" class="text-center">No hay planes nutricionales disponibles</td>
                                                     </tr>
                                                 <% } %>
                                             </tbody>
@@ -976,7 +1000,7 @@
     </div>
     
     <!-- Modal para ver detalles de dieta -->
-    <div class="modal fade" id="verDietaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="verDietaModal" tabindex="-1" aria-labelledby="verDietaModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
@@ -1019,24 +1043,6 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para Ver Dieta -->
-    <div class="modal fade" id="verDietaModal" tabindex="-1" aria-labelledby="verDietaModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="verDietaModalLabel">Detalles del Plan Nutricional</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="verDietaModalBody">
-                    <!-- El contenido se cargaru00e1 dinu00e1micamente -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -1203,6 +1209,14 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Inicializando dashboard del entrenador...');
             
+            // Agregar eventos a los botones de asignar dieta
+            document.querySelectorAll('.asignarDietaBtn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const dietaId = this.getAttribute('data-dieta-id');
+                    mostrarModalAsignarDieta(dietaId);
+                });
+            });
+            
             // Inicializar todos los modales de Bootstrap
             const modales = document.querySelectorAll('.modal');
             modales.forEach(modalElement => {
@@ -1238,24 +1252,47 @@
         // Configurar todos los event listeners
         function configurarEventListeners() {
             // Event listener para agregar comida
-            document.getElementById('agregarComida').addEventListener('click', agregarComida);
+            // La función agregarNuevaComida está definida en dietas.js
+            // No necesitamos agregar el event listener aquí, ya se maneja en dietas.js
             
             // Event listeners para los botones de dietas
             document.addEventListener('click', function(event) {
+                // Para botones Ver Dieta
                 if (event.target.classList.contains('verDietaBtn') || 
                     event.target.closest('.verDietaBtn')) {
                     const btn = event.target.classList.contains('verDietaBtn') ? 
                                 event.target : event.target.closest('.verDietaBtn');
                     const dietaId = btn.getAttribute('data-dieta-id');
-                    verDetalleDieta(dietaId);
+                    if (dietaId) {
+                        console.log('Click en botón ver dieta:', dietaId);
+                        verDetalleDieta(dietaId);
+                    }
                 }
                 
+                // Para botones Asignar Dieta
                 if (event.target.classList.contains('asignarDietaBtn') || 
                     event.target.closest('.asignarDietaBtn')) {
                     const btn = event.target.classList.contains('asignarDietaBtn') ? 
                                 event.target : event.target.closest('.asignarDietaBtn');
+                    if (!btn.disabled) {
+                        const dietaId = btn.getAttribute('data-dieta-id');
+                        if (dietaId) {
+                            console.log('Click en botón asignar dieta:', dietaId);
+                            mostrarModalAsignarDieta(dietaId);
+                        }
+                    }
+                }
+                
+                // Para botones Editar Dieta
+                if (event.target.classList.contains('editarDietaBtn') || 
+                    event.target.closest('.editarDietaBtn')) {
+                    const btn = event.target.classList.contains('editarDietaBtn') ? 
+                                event.target : event.target.closest('.editarDietaBtn');
                     const dietaId = btn.getAttribute('data-dieta-id');
-                    mostrarModalAsignarDieta(dietaId);
+                    if (dietaId) {
+                        console.log('Click en botón editar dieta:', dietaId);
+                        editarDieta(dietaId);
+                    }
                 }
             });
             
@@ -1269,9 +1306,13 @@
                     return;
                 }
                 
-                // Enviar la asignación al servidor
-                fetch(`/dietas/${dietaId}/asignar`, {
-                    method: 'POST',
+                // Mostrar indicador de carga
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Asignando...';
+                
+                // Enviar solicitud al servidor
+                fetch('/dietas/asignar', {
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -1447,30 +1488,6 @@
         function agregarEventListeners() {
             // Botón de asignar rutina
             document.querySelectorAll('.asignarRutinaBtn').forEach(btn => {
-                // Eliminar event listeners previos para evitar duplicados
-                btn.removeEventListener('click', asignarRutinaHandler);
-                btn.addEventListener('click', asignarRutinaHandler);
-            });
-            
-            // Botones de dietas
-            document.querySelectorAll('.verDietaBtn').forEach(btn => {
-                btn.removeEventListener('click', verDietaHandler);
-                btn.addEventListener('click', verDietaHandler);
-            });
-            
-            document.querySelectorAll('.asignarDietaBtn').forEach(btn => {
-                btn.removeEventListener('click', asignarDietaHandler);
-                btn.addEventListener('click', asignarDietaHandler);
-            });
-        }
-        
-        // Handler para el botón de asignar rutina
-        function asignarRutinaHandler() {
-            const rutinaId = this.getAttribute('data-rutina-id');
-            mostrarModalAsignarRutina(rutinaId);
-        }
-        
-        // Función para mostrar el modal de asignar rutina
         // La función mostrarModalAsignarRutina ha sido reemplazada por la nueva implementación
         // que usa el modal Bootstrap y la función prepararAsignacionRutina
         
@@ -1543,6 +1560,18 @@
             // Obtener los clientes del entrenador
             const entrenadorId = document.querySelector('input[name="entrenadorId"]').value;
             
+            // Limpiar y mostrar el modal primero
+            const selectCliente = document.getElementById('clienteParaDieta');
+            selectCliente.innerHTML = '<option value="">Cargando clientes...</option>';
+            
+            // Guardar el ID de la dieta en el botón de confirmar
+            document.getElementById('confirmarAsignarDieta').setAttribute('data-dieta-id', dietaId);
+            
+            // Mostrar el modal
+            const modal = new bootstrap.Modal(document.getElementById('asignarDietaModal'));
+            modal.show();
+            
+            // Luego cargar los clientes
             fetch(`/entrenadores/${entrenadorId}/clientes`)
                 .then(response => {
                     if (!response.ok) {
@@ -1553,14 +1582,19 @@
                 .then(clientes => {
                     console.log('Clientes obtenidos:', clientes);
                     // Actualizar el modal con la lista de clientes
-                    const selectCliente = document.getElementById('clienteParaDieta');
                     selectCliente.innerHTML = '';
                     
                     if (clientes && clientes.length > 0) {
                         clientes.forEach(cliente => {
                             const option = document.createElement('option');
                             option.value = cliente._id;
-                            option.textContent = `${cliente.nombre} ${cliente.apellido}`;
+                            if (cliente.usuarioId && cliente.usuarioId.nombre) {
+                                option.textContent = `${cliente.usuarioId.nombre} ${cliente.usuarioId.apellido || ''}`;
+                            } else if (cliente.nombre) {
+                                option.textContent = `${cliente.nombre} ${cliente.apellido || ''}`;
+                            } else {
+                                option.textContent = `Cliente ID: ${cliente._id}`;
+                            }
                             selectCliente.appendChild(option);
                         });
                     } else {
@@ -1570,19 +1604,53 @@
                         option.textContent = 'No hay clientes disponibles';
                         selectCliente.appendChild(option);
                     }
-                    
-                    // Guardar el ID de la dieta en el botón de confirmar
-                    document.getElementById('confirmarAsignarDieta').setAttribute('data-dieta-id', dietaId);
-                    
-                    // Mostrar el modal
-                    const modal = new bootstrap.Modal(document.getElementById('asignarDietaModal'));
-                    modal.show();
                 })
                 .catch(error => {
                     console.error('Error al obtener los clientes:', error);
+                    selectCliente.innerHTML = '<option value="">Error al cargar clientes</option>';
                     mostrarAlerta('Error al obtener los clientes: ' + error.message, 'danger');
                 });
         }
+        
+        // Manejar el evento de clic en el botón de confirmar asignación de dieta
+        document.getElementById('confirmarAsignarDieta').addEventListener('click', function() {
+            const dietaId = this.getAttribute('data-dieta-id');
+            const clienteId = document.getElementById('clienteParaDieta').value;
+            
+            if (!clienteId) {
+                alert('Por favor, selecciona un cliente');
+                return;
+            }
+            
+            console.log('Enviando solicitud para asignar dieta:', { dietaId, clienteId });
+            
+            // Deshabilitar botón mientras se procesa
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Asignando...';
+            
+            // Crear un formulario y enviarlo directamente
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/dietas/asignar-directo';
+            form.style.display = 'none';
+            
+            const dietaIdInput = document.createElement('input');
+            dietaIdInput.type = 'hidden';
+            dietaIdInput.name = 'dietaId';
+            dietaIdInput.value = dietaId;
+            form.appendChild(dietaIdInput);
+            
+            const clienteIdInput = document.createElement('input');
+            clienteIdInput.type = 'hidden';
+            clienteIdInput.name = 'clienteId';
+            clienteIdInput.value = clienteId;
+            form.appendChild(clienteIdInput);
+            
+            document.body.appendChild(form);
+            
+            // Enviar el formulario
+            form.submit();
+        });
         
         // Función para mostrar alertas
         function mostrarAlerta(mensaje, tipo) {
@@ -1838,94 +1906,29 @@
             });
         }
 
-        // Función para crear una nueva dieta
-        function crearNuevaDieta(event) {
-            event.preventDefault();
-            console.log('Creando nueva dieta...');
-            const form = document.getElementById('nuevaDietaForm');
-            const formData = new FormData(form);
-            
-            // Convertir FormData a objeto JSON
-            const dieta = {
-                entrenadorId: formData.get('entrenadorId'),
-                nombre: formData.get('nombre'),
-                descripcion: formData.get('descripcion'),
-                fechaInicio: formData.get('fechaInicio'),
-                fechaFin: formData.get('fechaFin'),
-                comidas: []
-            };
-            
-            // Extraer las comidas del formulario
-            const comidasContainer = document.getElementById('comidasContainer');
-            const comidaItems = comidasContainer.querySelectorAll('.comida-item');
-            
-            comidaItems.forEach((comida, index) => {
-                const tipoComida = formData.get(`comidas[${index}][tipoComida]`);
-                const descripcion = formData.get(`comidas[${index}][descripcion]`);
-                const caloriasEstimadas = formData.get(`comidas[${index}][caloriasEstimadas]`);
-                
-                if (tipoComida && descripcion) {
-                    dieta.comidas.push({
-                        tipoComida,
-                        descripcion,
-                        caloriasEstimadas: caloriasEstimadas ? parseInt(caloriasEstimadas) : 0
-                    });
-                }
-            });
-            
-            // Validar los datos
-            if (!dieta.nombre) {
-                mostrarAlerta('Por favor ingrese un nombre para el plan nutricional', 'warning');
-                return false;
-            }
-            
-            if (dieta.comidas.length === 0) {
-                mostrarAlerta('Debe agregar al menos una comida al plan nutricional', 'warning');
-                return false;
-            }
-            
-            console.log('Datos de dieta a enviar:', dieta);
-            
-            // Enviar los datos al servidor
-            fetch('/dietas/crear', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dieta)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error al crear el plan nutricional');
-                }
-                return response.json();
-            })
-            .then(data => {
-                mostrarAlerta('Plan nutricional creado exitosamente', 'success');
-                form.reset();
-                // Limpiar las comidas excepto la primera
-                const comidasContainer = document.getElementById('comidasContainer');
-                const comidaItems = comidasContainer.querySelectorAll('.comida-item');
-                for (let i = 1; i < comidaItems.length; i++) {
-                    comidaItems[i].remove();
-                }
-                // Actualizar la tabla de dietas
-                actualizarTablaDietas();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                mostrarAlerta('Error al crear el plan nutricional: ' + error.message, 'danger');
-            });
-            
-            return false;
-        }
-
         // Función para actualizar la tabla de dietas
         function actualizarTablaDietas() {
             console.log('Actualizando tabla de dietas...');
             const entrenadorId = document.querySelector('input[name="entrenadorId"]').value;
+            console.log('ID del entrenador para listar dietas:', entrenadorId);
             
-            fetch(`/dietas/entrenador/${entrenadorId}`)
+            // Mostrar indicador de carga
+            const tablaDietas = document.getElementById('dietasTableBody');
+            if (tablaDietas) {
+                tablaDietas.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></td></tr>';
+            } else {
+                console.error('No se encontró el elemento dietasTableBody');
+                return;
+            }
+            
+            // Hacer la petición al servidor - Usar la misma estructura que en rutinas
+            fetch(`/dietas/entrenador/${entrenadorId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Error al obtener planes nutricionales');
@@ -1934,19 +1937,14 @@
             })
             .then(dietas => {
                 console.log('Dietas obtenidas:', dietas);
-                const tablaDietas = document.getElementById('dietasTableBody');
-                if (!tablaDietas) {
-                    console.error('No se encontró el elemento dietasTableBody');
-                    return;
-                }
                 
                 // Limpiar la tabla
                 tablaDietas.innerHTML = '';
                 
-                if (dietas.length === 0) {
+                if (!dietas || dietas.length === 0) {
                     tablaDietas.innerHTML = `
                         <tr>
-                            <td colspan="6" class="text-center">No hay planes nutricionales disponibles</td>
+                            <td colspan="5" class="text-center">No hay planes nutricionales disponibles</td>
                         </tr>
                     `;
                     return;
@@ -1954,29 +1952,52 @@
                 
                 // Agregar las dietas a la tabla
                 dietas.forEach(dieta => {
-                    const fechaInicio = dieta.fechaInicio ? new Date(dieta.fechaInicio).toLocaleDateString() : 'No definida';
-                    const fechaFin = dieta.fechaFin ? new Date(dieta.fechaFin).toLocaleDateString() : 'No definida';
-                    const numComidas = dieta.comidas ? dieta.comidas.length : 0;
-                    
-                    const fila = document.createElement('tr');
-                    fila.innerHTML = `
-                        <td>${dieta.nombre}</td>
-                        <td>${dieta.descripcion || 'Sin descripción'}</td>
-                        <td>${fechaInicio}</td>
-                        <td>${fechaFin}</td>
-                        <td>${numComidas} comidas</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary me-2 verDietaBtn" data-dieta-id="${dieta._id}">Ver</button>
-                            <button class="btn btn-sm btn-success asignarDietaBtn" data-dieta-id="${dieta._id}">Asignar</button>
-                            <button class="btn btn-sm btn-warning editarDietaBtn" data-dieta-id="${dieta._id}">Editar</button>
-                        </td>
-                    `;
-                    
-                    tablaDietas.appendChild(fila);
+                    try {
+                        // Formatear la fecha
+                        const fechaInicio = dieta.fechaInicio ? new Date(dieta.fechaInicio).toLocaleDateString() : 'No definida';
+                        
+                        // Determinar el cliente asignado
+                        let clienteAsignado = '<span class="badge bg-warning">No asignada</span>';
+                        let botonAsignar = '';
+                        
+                        if (dieta.clienteId) {
+                            if (typeof dieta.clienteId === 'object' && dieta.clienteId.nombre) {
+                                clienteAsignado = `${dieta.clienteId.nombre} ${dieta.clienteId.apellido || ''}`;
+                                botonAsignar = 'disabled';
+                            } else {
+                                clienteAsignado = '<span class="badge bg-info">Cliente asignado</span>';
+                                botonAsignar = 'disabled';
+                            }
+                        }
+                        
+                        const fila = document.createElement('tr');
+                        fila.innerHTML = `
+                            <td>${dieta.nombre || 'Sin nombre'}</td>
+                            <td>${dieta.descripcion || 'Sin descripción'}</td>
+                            <td>${fechaInicio}</td>
+                            <td>${clienteAsignado}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-2 verDietaBtn" data-dieta-id="${dieta._id}">
+                                    <i class="fas fa-eye me-1"></i>Ver
+                                </button>
+                                <button class="btn btn-sm btn-success asignarDietaBtn" data-dieta-id="${dieta._id}" ${botonAsignar}>
+                                    <i class="fas fa-user-plus me-1"></i>Asignar
+                                </button>
+                                <button class="btn btn-sm btn-warning editarDietaBtn" data-dieta-id="${dieta._id}">
+                                    <i class="fas fa-edit me-1"></i>Editar
+                                </button>
+                            </td>
+                        `;
+                        
+                        tablaDietas.appendChild(fila);
+                    } catch (err) {
+                        console.error('Error al procesar dieta:', err, dieta);
+                    }
                 });
             })
             .catch(error => {
                 console.error('Error al obtener planes nutricionales:', error);
+                tablaDietas.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error al cargar los planes nutricionales: ${error.message}</td></tr>`;
                 mostrarAlerta('Error al obtener planes nutricionales: ' + error.message, 'danger');
             });
         }
@@ -2220,15 +2241,217 @@
         }
     </script>
     
+    <!-- Modal para asignar dieta a cliente -->
+    <div class="modal fade" id="asignarDietaModal" tabindex="-1" aria-labelledby="asignarDietaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="asignarDietaModalLabel">Asignar Plan Nutricional a Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="asignarDietaForm">
+                        <input type="hidden" id="dietaId" name="dietaId">
+                        <input type="hidden" id="dietaNombre" name="dietaNombre">
+                        <input type="hidden" name="entrenadorId" value="<%= idEntrenador %>">
+                        
+                        <div class="mb-3">
+                            <label for="clienteParaDieta" class="form-label">Seleccionar Cliente:</label>
+                            <select class="form-select" id="clienteParaDieta" name="clienteId" required>
+                                <option value="">Selecciona un cliente</option>
+                                <% if (typeof clientes !== 'undefined' && clientes && clientes.length > 0) { %>
+                                    <% clientes.forEach(function(cliente) { %>
+                                        <option value="<%= cliente._id %>"><%= cliente.nombre %> <%= cliente.apellido %></option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirmarAsignarDieta" data-dieta-id="">Asignar Plan Nutricional</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    
+    <!-- Modal para ver detalles de dieta -->
+    <div class="modal fade" id="verDietaModal" tabindex="-1" aria-labelledby="verDietaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="verDietaModalLabel">Detalles del Plan Nutricional</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6>Nombre:</h6>
+                            <p id="detalleDietaNombre" class="fw-bold"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Cliente Asignado:</h6>
+                            <p id="detalleDietaCliente"></p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <h6>Descripción:</h6>
+                            <p id="detalleDietaDescripcion"></p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6>Fecha de Inicio:</h6>
+                            <p id="detalleDietaFechaInicio"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Fecha de Fin:</h6>
+                            <p id="detalleDietaFechaFin"></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6>Comidas:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Tipo de Comida</th>
+                                            <th>Descripción</th>
+                                            <th>Calorías</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="detalleDietaComidas">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
     
     <!-- Sistema de Notificaciones -->
     <script src="/js/notifications.js"></script>
+    <script src="/js/dietas.js"></script>
+    <script src="/js/rutinas.js"></script>
     <script>
         // Pasar el ID del entrenador al sistema de notificaciones
         window.userId = '<%= idEntrenador %>';
+        
+        // Manejo del modal de asignación de rutinas
+        document.addEventListener('DOMContentLoaded', function() {
+            // Referencias a elementos del DOM
+            const asignarRutinaModal = new bootstrap.Modal(document.getElementById('asignarRutinaModal'));
+            const asignarRutinaBtns = document.querySelectorAll('.asignarRutinaBtn');
+            const rutinaModalNombre = document.getElementById('rutinaModalNombre');
+            const rutinaIdModal = document.getElementById('rutinaIdModal');
+            const clienteIdModal = document.getElementById('clienteIdModal');
+            const confirmarAsignarRutina = document.getElementById('confirmarAsignarRutina');
+            
+            // Evento para abrir el modal al hacer clic en el botón de asignar
+            asignarRutinaBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const rutinaId = this.getAttribute('data-rutina-id');
+                    const rutinaNombre = this.getAttribute('data-rutina-nombre');
+                    
+                    // Establecer los valores en el modal
+                    rutinaIdModal.value = rutinaId;
+                    rutinaModalNombre.textContent = rutinaNombre;
+                    
+                    // Mostrar el modal
+                    asignarRutinaModal.show();
+                });
+            });
+            
+            // Evento para confirmar la asignación
+            confirmarAsignarRutina.addEventListener('click', function() {
+                const rutinaId = rutinaIdModal.value;
+                const clienteId = clienteIdModal.value;
+                
+                if (!clienteId) {
+                    alert('Por favor, selecciona un cliente');
+                    return;
+                }
+                
+                console.log('Enviando solicitud para asignar rutina:', { rutinaId, clienteId });
+                
+                // Deshabilitar botón mientras se procesa
+                confirmarAsignarRutina.disabled = true;
+                confirmarAsignarRutina.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Asignando...';
+                
+                // Crear un formulario y enviarlo directamente
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/rutinas/asignar-directo';
+                form.style.display = 'none';
+                
+                const rutinaIdInput = document.createElement('input');
+                rutinaIdInput.type = 'hidden';
+                rutinaIdInput.name = 'rutinaId';
+                rutinaIdInput.value = rutinaId;
+                form.appendChild(rutinaIdInput);
+                
+                const clienteIdInput = document.createElement('input');
+                clienteIdInput.type = 'hidden';
+                clienteIdInput.name = 'clienteId';
+                clienteIdInput.value = clienteId;
+                form.appendChild(clienteIdInput);
+                
+                document.body.appendChild(form);
+                
+                // Enviar el formulario
+                form.submit();
+            });
+        });
     </script>
+    <!-- Modal para asignar rutina a cliente -->
+    <div class="modal fade" id="asignarRutinaModal" tabindex="-1" aria-labelledby="asignarRutinaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="asignarRutinaModalLabel">Asignar Rutina a Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="rutina-info mb-3">
+                        <h6>Rutina: <span id="rutinaModalNombre"></span></h6>
+                    </div>
+                    <form id="asignarRutinaForm">
+                        <input type="hidden" id="rutinaIdModal" name="rutinaId">
+                        <div class="mb-3">
+                            <label for="clienteIdModal" class="form-label">Seleccionar Cliente:</label>
+                            <select class="form-select" id="clienteIdModal" name="clienteId" required>
+                                <option value="">Selecciona un cliente</option>
+                                <% if (typeof clientes !== 'undefined' && clientes && clientes.length > 0) { %>
+                                    <% clientes.forEach(function(cliente) { %>
+                                        <option value="<%= cliente._id %>"><%= cliente.nombre %> <%= cliente.apellido %></option>
+                                    <% }); %>
+                                <% } else { %>
+                                    <option value="" disabled>No hay clientes disponibles</option>
+                                <% } %>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirmarAsignarRutina">Asignar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

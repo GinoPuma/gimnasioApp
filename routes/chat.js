@@ -147,4 +147,39 @@ router.get('/entrenador/:entrenadorId', isAuthenticated, async (req, res) => {
     }
 });
 
+// Ruta para mostrar la lista de entrenadores para chat (vista del cliente)
+router.get('/cliente-dashboard/:clienteId', isAuthenticated, async (req, res) => {
+    try {
+        // Verificar que el usuario está autenticado y es un cliente
+        if (!req.session.usuario || req.session.usuario.tipoUsuario !== 'cliente') {
+            console.log('Error: Intento de acceso a lista de entrenadores para chat por un usuario que no es cliente');
+            return res.redirect('/frontend/login');
+        }
+        
+        const clienteId = req.params.clienteId;
+        
+        // Obtener datos del cliente
+        const cliente = await Cliente.findById(clienteId).populate('usuarioId').populate('entrenadorId');
+        if (!cliente) {
+            return res.status(404).send('Cliente no encontrado');
+        }
+        
+        // Obtener el entrenador asignado al cliente
+        let entrenador = null;
+        if (cliente.entrenadorId) {
+            entrenador = await Entrenador.findById(cliente.entrenadorId).populate('usuarioId');
+        }
+        
+        res.render('chatEntrenadorList', {
+            cliente,
+            entrenador,
+            userId: cliente.usuarioId._id,
+            userType: 'cliente'
+        });
+    } catch (error) {
+        console.error('Error al cargar la lista de entrenadores para chat:', error);
+        res.status(500).send('Error al cargar la lista de entrenadores: ' + error.message);
+    }
+});
+
 module.exports = router;

@@ -168,6 +168,236 @@ app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/clientes', require('./routes/cliente'));
 app.use('/api/entrenadores', require('./routes/entrenadores'));
 app.use('/api/ejercicios', require('./routes/ejercicios'));
+
+// Ruta para asignar dietas directamente (método alternativo)
+app.post('/dietas/asignar-directo', async (req, res) => {
+  try {
+    const { dietaId, clienteId } = req.body;
+    console.log('Solicitud de asignación directa de dieta recibida:', { dietaId, clienteId });
+    
+    if (!dietaId || !clienteId) {
+      console.error('Faltan datos requeridos:', { dietaId, clienteId });
+      return res.status(400).send('Faltan datos requeridos: dietaId y clienteId son obligatorios');
+    }
+    
+    // Importar los modelos necesarios
+    const Dieta = require('./models/Dieta');
+    const Cliente = require('./models/Cliente');
+    
+    // Verificar que la dieta exista
+    const dieta = await Dieta.findById(dietaId);
+    if (!dieta) {
+      console.error('Dieta no encontrada con ID:', dietaId);
+      return res.status(404).send('Dieta no encontrada');
+    }
+    
+    // Verificar que el cliente exista
+    const cliente = await Cliente.findById(clienteId).populate('usuarioId');
+    if (!cliente) {
+      console.error('Cliente no encontrado con ID:', clienteId);
+      return res.status(404).send('Cliente no encontrado');
+    }
+    
+    // Actualizar la dieta con el clienteId usando findByIdAndUpdate
+    const dietaActualizada = await Dieta.findByIdAndUpdate(
+      dietaId,
+      { clienteId: clienteId },
+      { new: true }
+    );
+    
+    // Verificar que la actualización se haya realizado correctamente
+    if (!dietaActualizada || !dietaActualizada.clienteId) {
+      throw new Error('No se pudo actualizar la dieta');
+    }
+    
+    console.log('Dieta asignada correctamente:', {
+      dietaId: dietaActualizada._id,
+      dietaName: dietaActualizada.nombre,
+      clienteId: dietaActualizada.clienteId,
+      clienteName: cliente.usuarioId ? (cliente.usuarioId.nombre + ' ' + (cliente.usuarioId.apellido || '')) : 'Cliente sin nombre'
+    });
+    
+    // Redirigir al dashboard del entrenador con mensaje de éxito
+    const nombreCliente = cliente.usuarioId ? (cliente.usuarioId.nombre + ' ' + (cliente.usuarioId.apellido || '')) : 'Cliente seleccionado';
+    return res.redirect(`/frontend/entrenadores/dashboard?mensaje=${encodeURIComponent('Dieta asignada correctamente a ' + nombreCliente)}`);
+  } catch (error) {
+    console.error('Error al asignar dieta directamente:', error);
+    return res.redirect(`/frontend/entrenadores/dashboard?error=${encodeURIComponent('Error al asignar dieta: ' + error.message)}`);
+  }
+});
+
+// Ruta para asignar rutinas directamente (método alternativo)
+app.post('/rutinas/asignar-directo', async (req, res) => {
+  try {
+    const { rutinaId, clienteId } = req.body;
+    console.log('Solicitud de asignación directa recibida:', { rutinaId, clienteId });
+    
+    if (!rutinaId || !clienteId) {
+      console.error('Faltan datos requeridos:', { rutinaId, clienteId });
+      return res.status(400).send('Faltan datos requeridos: rutinaId y clienteId son obligatorios');
+    }
+    
+    // Importar los modelos necesarios
+    const Rutina = require('./models/Rutina');
+    const Cliente = require('./models/Cliente');
+    
+    // Verificar que la rutina exista
+    const rutina = await Rutina.findById(rutinaId);
+    if (!rutina) {
+      console.error('Rutina no encontrada con ID:', rutinaId);
+      return res.status(404).send('Rutina no encontrada');
+    }
+    
+    // Verificar que el cliente exista
+    const cliente = await Cliente.findById(clienteId).populate('usuarioId');
+    if (!cliente) {
+      console.error('Cliente no encontrado con ID:', clienteId);
+      return res.status(404).send('Cliente no encontrado');
+    }
+    
+    // Actualizar la rutina con el clienteId
+    rutina.clienteId = clienteId;
+    await rutina.save();
+    
+    console.log('Rutina asignada correctamente:', {
+      rutinaId: rutina._id,
+      rutinaName: rutina.nombre,
+      clienteId: rutina.clienteId,
+      clienteName: cliente.usuarioId.nombre + ' ' + cliente.usuarioId.apellido
+    });
+    
+    // Redirigir al dashboard del entrenador con mensaje de éxito
+    return res.redirect(`/frontend/entrenadores/dashboard?mensaje=${encodeURIComponent('Rutina asignada correctamente a ' + cliente.usuarioId.nombre + ' ' + cliente.usuarioId.apellido)}`);
+  } catch (error) {
+    console.error('Error al asignar rutina directamente:', error);
+    return res.redirect(`/frontend/entrenadores/dashboard?error=${encodeURIComponent('Error al asignar rutina: ' + error.message)}`);
+  }
+});
+
+// Ruta para las dietas del cliente
+app.get('/clientes/:clienteId/dietas', async (req, res) => {
+  try {
+    const clienteId = req.params.clienteId;
+    console.log('Obteniendo dietas para el cliente:', clienteId);
+    
+    // Importar los modelos necesarios
+    const Dieta = require('./models/Dieta');
+    const Cliente = require('./models/Cliente');
+    
+    // Verificar que el cliente exista
+    const cliente = await Cliente.findById(clienteId).populate('usuarioId');
+    if (!cliente) {
+      console.error('Cliente no encontrado con ID:', clienteId);
+      return res.status(404).send('Cliente no encontrado');
+    }
+    
+    console.log('Cliente encontrado:', cliente._id, cliente.usuarioId.nombre);
+    
+    // Verificar todas las dietas en la base de datos que tengan este clienteId
+    console.log('Buscando dietas con clienteId:', clienteId);
+    
+    // Obtener las dietas asignadas al cliente
+    const dietas = await Dieta.find({ clienteId })
+      .populate('entrenadorId')
+      .sort({ fechaInicio: -1 });
+    
+    console.log(`Se encontraron ${dietas.length} dietas para el cliente ${clienteId}`);
+    
+    // Mostrar detalles de las dietas encontradas para depuración
+    if (dietas.length > 0) {
+      dietas.forEach((dieta, index) => {
+        console.log(`Dieta ${index + 1}:`, {
+          id: dieta._id,
+          nombre: dieta.nombre,
+          clienteId: dieta.clienteId,
+          entrenadorId: dieta.entrenadorId
+        });
+      });
+    } else {
+      console.log('No se encontraron dietas asignadas a este cliente');
+    }
+    
+    // Renderizar la vista con las dietas del cliente
+    res.render('clienteDietas', {
+      cliente,
+      dietas,
+      titulo: 'Mis Planes Nutricionales',
+      mensaje: req.query.mensaje,
+      error: req.query.error
+    });
+  } catch (error) {
+    console.error('Error al obtener dietas del cliente:', error);
+    res.status(500).send('Error al obtener dietas: ' + error.message);
+  }
+});
+
+// Ruta para las rutinas del cliente
+app.get('/clientes/:clienteId/rutinas', async (req, res) => {
+  try {
+    const clienteId = req.params.clienteId;
+    console.log('Obteniendo rutinas para el cliente:', clienteId);
+    
+    // Importar los modelos necesarios
+    const Rutina = require('./models/Rutina');
+    const Cliente = require('./models/Cliente');
+    
+    // Verificar que el cliente exista
+    const cliente = await Cliente.findById(clienteId).populate('usuarioId');
+    if (!cliente) {
+      console.error('Cliente no encontrado con ID:', clienteId);
+      return res.status(404).send('Cliente no encontrado');
+    }
+    
+    console.log('Cliente encontrado:', cliente._id, cliente.usuarioId.nombre);
+    
+    // Verificar todas las rutinas en la base de datos que tengan este clienteId
+    console.log('Buscando rutinas con clienteId:', clienteId);
+    
+    // Obtener las rutinas asignadas al cliente
+    const rutinas = await Rutina.find({ clienteId })
+      .populate('entrenadorId')
+      .sort({ fechaInicio: -1 });
+    
+    console.log(`Se encontraron ${rutinas.length} rutinas para el cliente ${clienteId}`);
+    
+    // Mostrar detalles de las rutinas encontradas para depuración
+    if (rutinas.length > 0) {
+      rutinas.forEach((rutina, index) => {
+        console.log(`Rutina ${index + 1}:`, {
+          id: rutina._id,
+          nombre: rutina.nombre,
+          clienteId: rutina.clienteId,
+          entrenadorId: rutina.entrenadorId
+        });
+      });
+    } else {
+      console.log('No se encontraron rutinas asignadas a este cliente');
+      
+      // Buscar si hay rutinas que deberían estar asignadas a este cliente
+      const todasLasRutinas = await Rutina.find({});
+      console.log(`Total de rutinas en la base de datos: ${todasLasRutinas.length}`);
+      
+      // Verificar si alguna rutina tiene este clienteId como string en lugar de ObjectId
+      const rutinasConClienteIdString = todasLasRutinas.filter(r => 
+        r.clienteId && r.clienteId.toString() === clienteId.toString());
+      
+      if (rutinasConClienteIdString.length > 0) {
+        console.log('Se encontraron rutinas con clienteId como string:', rutinasConClienteIdString.length);
+      }
+    }
+    
+    // Renderizar la vista de rutinas del cliente
+    return res.render('rutinasCliente', {
+      rutinas: rutinas,
+      clienteId: clienteId,
+      nombreCliente: cliente.usuarioId.nombre + ' ' + cliente.usuarioId.apellido
+    });
+  } catch (error) {
+    console.error('Error al obtener rutinas del cliente:', error);
+    return res.status(500).send('Error al obtener rutinas del cliente: ' + error.message);
+  }
+});
+
 app.use('/api/rutinas', require('./routes/rutinas'));
 app.use('/api/progresos', require('./routes/progreso'));
 app.use('/api/dietas', require('./routes/dietas'));
@@ -206,6 +436,7 @@ try {
 }
 
 // Puerto de escucha
-server.listen(3000, () => {
-    console.log('Aplicación ejecutándose en http://localhost:3000');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Aplicación ejecutándose en http://localhost:${PORT}`);
 });

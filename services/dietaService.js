@@ -67,21 +67,33 @@ class DietaService {
 
     async asignarDieta(dietaId, clienteId) {
         try {
+            console.log(`Servicio asignarDieta - dietaId: ${dietaId}, clienteId: ${clienteId}`);
+            
             // Validar que la dieta exista
             const dieta = await Dieta.findById(dietaId);
             if (!dieta) {
                 throw new Error('Dieta no encontrada');
             }
+            console.log('Dieta encontrada:', dieta);
             
-            // Validar que el cliente exista
-            const cliente = await Cliente.findOne({ usuarioId: clienteId });
+            // Validar que el cliente exista - intentar buscar por _id primero
+            let cliente = await Cliente.findById(clienteId);
+            
+            // Si no se encuentra, intentar buscar por usuarioId
             if (!cliente) {
-                throw new Error('Cliente no encontrado');
+                console.log('No se encontró cliente por _id, buscando por usuarioId');
+                cliente = await Cliente.findOne({ usuarioId: clienteId });
             }
+            
+            if (!cliente) {
+                throw new Error(`Cliente no encontrado con ID: ${clienteId}`);
+            }
+            console.log('Cliente encontrado:', cliente);
             
             // Asignar la dieta al cliente
             dieta.clienteId = clienteId;
             await dieta.save();
+            console.log('Dieta asignada y guardada correctamente');
             
             return await dieta.populate('clienteId').populate('entrenadorId');
         } catch (error) {
@@ -103,6 +115,23 @@ class DietaService {
             return dieta;
         } catch (error) {
             console.error('Error en servicio obtenerDieta:', error);
+            throw error;
+        }
+    }
+    
+    async obtenerDietaPorId(dietaId) {
+        try {
+            const dieta = await Dieta.findById(dietaId)
+                .populate('clienteId', 'nombre apellido correo')
+                .populate('entrenadorId', 'nombre apellido correo');
+                
+            if (!dieta) {
+                throw new Error('Dieta no encontrada');
+            }
+            
+            return dieta;
+        } catch (error) {
+            console.error('Error en servicio obtenerDietaPorId:', error);
             throw error;
         }
     }

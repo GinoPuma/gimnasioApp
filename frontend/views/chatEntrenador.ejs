@@ -288,7 +288,25 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
             // Inicializar el sistema de notificaciones
-            window.userId = '<%= entrenador._id %>';
+            // Importante: Usamos el ID del usuario, no el ID del entrenador
+            window.userId = '<%= userId %>';
+            console.log('ID de usuario para notificaciones:', window.userId);
+            
+            // Marcar mensajes como leu00eddos al abrir el chat
+            socket.emit('mark-notifications-read', {
+                userId: window.userId,
+                notificationIds: [], // Vau00edo marca todas como leu00eddas
+                senderId: receiverId // Marcar solo los mensajes de este remitente
+            });
+            
+            // Forzar actualización del contador de notificaciones
+            socket.emit('get-notifications', { userId: window.userId });
+            
+            // Actualizar el contador de mensajes no leu00eddos para este chat especu00edfico
+            socket.emit('reset-unread-count', {
+                senderId: receiverId,
+                receiverId: userId
+            });
         });
     </script>
     

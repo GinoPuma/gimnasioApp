@@ -26,8 +26,18 @@
             <ul>
                 <li><a href="/clientes/<%= idCliente %>/rutinas"><i class="fas fa-dumbbell"></i> Mis Rutinas</a></li>
                 <li><a href="/clientes/<%= idCliente %>/progreso"><i class="fas fa-chart-line"></i> Mi Progreso</a></li>
-                <li><a href="/dietas/<%= idCliente %>/dietas"><i class="fas fa-utensils"></i> Mis Dietas</a></li>
-                <li><a href="/mientrenador/<%= idCliente %>/entrenador"><i class="fas fa-user-tie"></i> Mi Entrenador</a></li>
+                <li><a href="/clientes/<%= idCliente %>/dietas"><i class="fas fa-utensils"></i> Mis Dietas</a></li>
+                <li>
+                    <a href="/mientrenador/<%= idCliente %>/entrenador" class="nav-link-with-badge">
+                        <i class="fas fa-user-tie"></i> Mi Entrenador
+                    </a>
+                </li>
+                <li>
+                    <a href="/chat/cliente-dashboard/<%= idCliente %>" class="nav-link-with-badge">
+                        <i class="fas fa-comments"></i> Chat
+                        <span class="chat-badge" id="chat-notification-badge" style="display: none;">0</span>
+                    </a>
+                </li>
                 <li><a href="/ejercicios"><i class="fas fa-user-tie"></i> Mis Ejercicios</a></li>
                 <li><a href="/logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
             </ul>

@@ -5,7 +5,7 @@ class DietaController {
         try {
             console.log('==== INICIO CREAR DIETA ====');
             console.log('Datos recibidos para crear dieta:', JSON.stringify(req.body, null, 2));
-            console.log('Sesiu00f3n actual:', req.session ? JSON.stringify(req.session.usuario, null, 2) : 'No hay sesiu00f3n');
+            console.log('Sesión actual:', req.session ? JSON.stringify(req.session.usuario, null, 2) : 'No hay sesión');
             
             // Validar datos requeridos
             if (!req.body.nombre) {
@@ -13,9 +13,9 @@ class DietaController {
                 return res.status(400).json({ error: 'El nombre de la dieta es obligatorio' });
             }
             
-            // Si no se proporcionu00f3 entrenadorId en el cuerpo, intentar obtenerlo de la sesiu00f3n
+            // Si no se proporcionó entrenadorId en el cuerpo, intentar obtenerlo de la sesión
             if (!req.body.entrenadorId && req.session && req.session.usuario && req.session.usuario._id) {
-                console.log('Usando ID de entrenador de la sesiu00f3n:', req.session.usuario._id);
+                console.log('Usando ID de entrenador de la sesión:', req.session.usuario._id);
                 req.body.entrenadorId = req.session.usuario._id;
             }
             
@@ -30,10 +30,18 @@ class DietaController {
             }
             
             console.log('Datos validados correctamente, llamando al servicio...');
+            
+            // Crear la dieta
             const nuevaDieta = await dietaService.crearDieta(req.body);
             console.log('Dieta creada exitosamente:', nuevaDieta._id);
+            
+            // Obtener la dieta completa con todas sus propiedades para devolverla
+            const dietaCompleta = await dietaService.obtenerDietaPorId(nuevaDieta._id);
+            console.log('Dieta completa obtenida:', dietaCompleta._id);
             console.log('==== FIN CREAR DIETA ====');
-            res.status(201).json(nuevaDieta);
+            
+            // Devolver la dieta completa
+            res.status(201).json(dietaCompleta);
         } catch (error) {
             console.error('==== ERROR AL CREAR DIETA ====');
             console.error('Error al crear dieta:', error);
@@ -86,7 +94,14 @@ class DietaController {
     
     async listarDietasPorEntrenador(req, res) {
         try {
-            const entrenadorId = req.params.entrenadorId || (req.session && req.session.usuario && req.session.usuario._id);
+            // Obtener el ID del entrenador de los parámetros o de la sesión
+            let entrenadorId = req.params.entrenadorId;
+            
+            // Si no hay ID en los parámetros, intentar obtenerlo de la sesión
+            if (!entrenadorId && req.session && req.session.usuario) {
+                entrenadorId = req.session.usuario._id;
+                console.log('Usando ID de entrenador de la sesión:', entrenadorId);
+            }
             
             if (!entrenadorId) {
                 return res.status(400).json({ error: 'ID de entrenador no proporcionado' });
@@ -94,6 +109,7 @@ class DietaController {
             
             console.log(`Obteniendo dietas para el entrenador ${entrenadorId}`);
             const dietas = await dietaService.listarDietasPorEntrenador(entrenadorId);
+            console.log(`Se encontraron ${dietas.length} dietas para el entrenador`);
             res.json(dietas);
         } catch (error) {
             console.error('Error al listar dietas por entrenador:', error);

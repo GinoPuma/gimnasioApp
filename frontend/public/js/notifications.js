@@ -69,28 +69,48 @@ class NotificationManager {
 
     // Configurar listeners de Socket.IO
     setupSocketListeners() {
+        console.log('Configurando listeners de Socket.IO para el usuario:', this.userId);
+        
         // Solicitar notificaciones al conectar
         this.socket.emit('get-notifications', { userId: this.userId });
+        console.log('Solicitando notificaciones para el usuario:', this.userId);
 
         // Recibir todas las notificaciones
         this.socket.on(`all-notifications-${this.userId}`, (notifications) => {
+            console.log('Notificaciones recibidas:', notifications);
             this.notifications = notifications;
             this.renderNotifications();
+            
+            // Contar notificaciones no leu00eddas
+            const unreadCount = notifications.filter(notification => !notification.read).length;
+            this.unreadCount = unreadCount;
+            this.updateBadge();
+            
+            // Actualizar el badge de chat
+            this.updateChatBadge(unreadCount);
         });
 
         // Recibir contador de no leu00eddas
         this.socket.on(`unread-count-${this.userId}`, (data) => {
+            console.log('Contador de notificaciones no leu00eddas recibido:', data);
             this.unreadCount = data.count;
             this.updateBadge();
+            
+            // Actualizar el badge de chat
+            this.updateChatBadge(data.count);
         });
 
         // Recibir nueva notificaciu00f3n
         this.socket.on(`notifications-${this.userId}`, (notification) => {
+            console.log('Nueva notificaciu00f3n recibida:', notification);
             this.notifications.unshift(notification);
             this.unreadCount++;
             this.updateBadge();
             this.renderNotifications();
             this.showNotificationToast(notification);
+            
+            // Actualizar el badge de chat
+            this.updateChatBadge(this.unreadCount);
         });
     }
 
@@ -153,11 +173,44 @@ class NotificationManager {
 
     // Actualizar badge con contador de no leu00eddas
     updateBadge() {
-        if (this.unreadCount > 0) {
-            this.badge.textContent = this.unreadCount > 99 ? '99+' : this.unreadCount;
-            this.badge.style.display = 'block';
-        } else {
-            this.badge.style.display = 'none';
+        if (this.badge) {
+            if (this.unreadCount > 0) {
+                this.badge.textContent = this.unreadCount;
+                this.badge.style.display = 'block';
+            } else {
+                this.badge.style.display = 'none';
+            }
+        }
+    }
+    
+    // Actualizar el badge de chat con el contador de mensajes no leu00eddos
+    updateChatBadge(count) {
+        const chatBadge = document.getElementById('chat-notification-badge');
+        if (chatBadge) {
+            // Siempre actualizar el texto del contador
+            chatBadge.textContent = count;
+            
+            if (count > 0) {
+                // Asegurar que el badge sea visible
+                chatBadge.style.display = 'inline-flex';
+                
+                // Aplicar animaciu00f3n para llamar la atenciu00f3n
+                chatBadge.classList.add('notification-new');
+                
+                // Hacer que el badge sea mu00e1s visible
+                chatBadge.style.backgroundColor = '#ff3636';
+                chatBadge.style.color = 'white';
+                chatBadge.style.fontWeight = 'bold';
+                
+                // Quitar la animaciu00f3n despuu00e9s de un momento
+                setTimeout(() => {
+                    chatBadge.classList.remove('notification-new');
+                }, 1000);
+            } else {
+                // Si no hay mensajes, mostrar 0 pero con estilo menos llamativo
+                chatBadge.style.backgroundColor = '#6c757d';
+                chatBadge.style.opacity = '0.7';
+            }
         }
     }
 

@@ -50,14 +50,35 @@ class RutinaService {
             
             console.log('Rutina encontrada:', rutina.nombre);
             
+            // Verificar que el clienteId sea un string válido
+            if (typeof clienteId === 'string') {
+                clienteId = clienteId.trim();
+            }
+            
+            console.log('ID del cliente a asignar:', clienteId);
+            
             // Actualizar la rutina con el ID del cliente
             const rutinaActualizada = await Rutina.findByIdAndUpdate(
                 rutinaId, 
-                { clienteId }, 
+                { clienteId: clienteId }, 
                 { new: true }
             );
             
+            if (!rutinaActualizada) {
+                throw new Error('No se pudo actualizar la rutina');
+            }
+            
             console.log('Rutina actualizada correctamente:', rutinaActualizada);
+            
+            // Verificar que el clienteId se haya asignado correctamente
+            if (!rutinaActualizada.clienteId || rutinaActualizada.clienteId.toString() !== clienteId.toString()) {
+                console.error('Error: El clienteId no se asignó correctamente', {
+                    esperado: clienteId,
+                    actual: rutinaActualizada.clienteId
+                });
+                throw new Error('El clienteId no se asignó correctamente');
+            }
+            
             return rutinaActualizada;
         } catch (error) {
             console.error('Error al asignar rutina:', error);
@@ -72,6 +93,10 @@ class RutinaService {
     }
 
     async obtenerRutina(rutinaId) {
+        return await Rutina.findById(rutinaId).populate('clienteId').populate('entrenadorId');
+    }
+    
+    async obtenerRutinaPorId(rutinaId) {
         return await Rutina.findById(rutinaId).populate('clienteId').populate('entrenadorId');
     }
 

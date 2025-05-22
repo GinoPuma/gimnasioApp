@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Chats | GymApp</title>
+    <title>Mi Chat | GymApp</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -49,13 +49,13 @@
             padding: 20px;
         }
 
-        .client-list {
+        .trainer-list {
             list-style: none;
             padding: 0;
             margin: 0;
         }
 
-        .client-item {
+        .trainer-item {
             padding: 15px;
             border-bottom: 1px solid #eee;
             display: flex;
@@ -63,15 +63,15 @@
             transition: background-color 0.2s;
         }
 
-        .client-item:last-child {
+        .trainer-item:last-child {
             border-bottom: none;
         }
 
-        .client-item:hover {
+        .trainer-item:hover {
             background-color: #f9f9f9;
         }
 
-        .client-avatar {
+        .trainer-avatar {
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -84,16 +84,16 @@
             margin-right: 15px;
         }
 
-        .client-info {
+        .trainer-info {
             flex-grow: 1;
         }
 
-        .client-name {
+        .trainer-name {
             font-weight: 600;
             margin-bottom: 5px;
         }
 
-        .client-status {
+        .trainer-status {
             font-size: 0.8rem;
             color: #666;
         }
@@ -102,151 +102,12 @@
             margin-bottom: 20px;
         }
 
-        .no-clients {
+        .no-trainer {
             padding: 20px;
             text-align: center;
             color: #666;
         }
-    </style>
-</head>
-<body>
-    <div class="container main-container">
-        <div class="row">
-            <div class="col-12">
-                <a href="/frontend/entrenadores/<%= entrenador._id %>" class="btn btn-secondary btn-back">
-                    <i class="fas fa-arrow-left"></i> Volver al Dashboard
-                </a>
-                
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <span><i class="fas fa-comments me-2"></i>Mis Conversaciones</span>
-                    </div>
-                    <div class="card-body">
-                        <% if (clientes && clientes.length > 0) { %>
-                            <ul class="client-list">
-                                <% clientes.forEach(function(cliente) { %>
-                                    <li class="client-item">
-                                        <div class="client-avatar">
-                                            <%= cliente.usuarioId.nombre.charAt(0) %>
-                                        </div>
-                                        <div class="client-info">
-                                            <div class="client-name"><%= cliente.usuarioId.nombre %> <%= cliente.usuarioId.apellido %></div>
-                                            <div class="client-status">Cliente</div>
-                                        </div>
-                                        <a href="/chat/entrenador/<%= entrenador._id %>/cliente/<%= cliente._id %>" class="btn btn-primary position-relative">
-                                            <i class="fas fa-comment"></i> Chatear
-                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger message-count" 
-                                                  data-cliente-id="<%= cliente.usuarioId._id %>" style="display: none;">
-                                                0
-                                                <span class="visually-hidden">mensajes no leídos</span>
-                                            </span>
-                                        </a>
-                                    </li>
-                                <% }); %>
-                            </ul>
-                        <% } else { %>
-                            <div class="no-clients">
-                                <i class="fas fa-users fa-3x mb-3"></i>
-                                <p>No tienes clientes asignados actualmente.</p>
-                            </div>
-                        <% } %>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Conectar a Socket.IO
-            const socket = io();
-            
-            // ID del entrenador
-            const entrenadorId = '<%= entrenador.usuarioId._id %>';
-            window.userId = entrenadorId;
-            
-            console.log('ID del entrenador para notificaciones:', entrenadorId);
-            
-            // Obtener todos los badges de mensajes
-            const messageBadges = document.querySelectorAll('.message-count');
-            
-            // Crear un mapa para rastrear los contadores por cliente
-            const messageCounters = {};
-            
-            // Inicializar los contadores
-            messageBadges.forEach(badge => {
-                const clienteId = badge.getAttribute('data-cliente-id');
-                messageCounters[clienteId] = 0;
-            });
-            
-            // Solicitar notificaciones al conectar
-            socket.emit('get-notifications', { userId: entrenadorId });
-            
-            // Escuchar notificaciones
-            socket.on(`notifications-${entrenadorId}`, notification => {
-                console.log('Nueva notificación recibida:', notification);
-                
-                if (notification.type === 'message' && notification.senderId) {
-                    // Incrementar contador para este cliente
-                    const clienteId = notification.senderId;
-                    messageCounters[clienteId] = (messageCounters[clienteId] || 0) + 1;
-                    
-                    // Actualizar badge
-                    updateBadge(clienteId, messageCounters[clienteId]);
-                }
-            });
-            
-            // Recibir contador de no leídas
-            socket.on(`unread-count-${entrenadorId}`, data => {
-                console.log('Contador de notificaciones no leídas recibido:', data);
-            });
-            
-            // Función para actualizar el badge de un cliente específico
-            function updateBadge(clienteId, count) {
-                const badge = document.querySelector(`.message-count[data-cliente-id="${clienteId}"]`);
-                if (badge) {
-                    if (count > 0) {
-                        badge.textContent = count;
-                        badge.style.display = 'block';
-                        // Aplicar animación para llamar la atención
-                        badge.classList.add('animate-badge');
-                        setTimeout(() => {
-                            badge.classList.remove('animate-badge');
-                        }, 1000);
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                }
-            }
-            
-            // Verificar mensajes no leídos para cada cliente
-            socket.on('connect', function() {
-                // Para cada cliente, solicitar el estado de mensajes no leídos
-                messageBadges.forEach(badge => {
-                    const clienteId = badge.getAttribute('data-cliente-id');
-                    
-                    // Emitir evento para obtener mensajes no leídos entre este cliente y el entrenador
-                    socket.emit('check-unread-messages', {
-                        senderId: clienteId,
-                        receiverId: entrenadorId
-                    });
-                });
-            });
-            
-            // Escuchar respuesta de mensajes no leídos
-            socket.on(`unread-messages-count`, data => {
-                if (data.senderId && data.count) {
-                    // Actualizar contador para este cliente
-                    messageCounters[data.senderId] = data.count;
-                    updateBadge(data.senderId, data.count);
-                }
-            });
-        });
-    </script>
-    
-    <style>
+        
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.2); }
@@ -262,5 +123,140 @@
             padding: 0.25rem 0.5rem !important;
         }
     </style>
+</head>
+<body>
+    <div class="container main-container">
+        <div class="row">
+            <div class="col-12">
+                <a href="/frontend/clientes/<%= cliente._id %>" class="btn btn-secondary btn-back">
+                    <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                </a>
+                
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <span><i class="fas fa-comments me-2"></i>Mi Chat con Entrenador</span>
+                    </div>
+                    <div class="card-body">
+                        <% if (entrenador) { %>
+                            <ul class="trainer-list">
+                                <li class="trainer-item">
+                                    <div class="trainer-avatar">
+                                        <%= entrenador.usuarioId.nombre.charAt(0) %>
+                                    </div>
+                                    <div class="trainer-info">
+                                        <div class="trainer-name"><%= entrenador.usuarioId.nombre %> <%= entrenador.usuarioId.apellido %></div>
+                                        <div class="trainer-status">Entrenador</div>
+                                    </div>
+                                    <a href="/chat/cliente/<%= cliente._id %>" class="btn btn-primary position-relative">
+                                        <i class="fas fa-comment"></i> Chatear
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger message-count" 
+                                              data-entrenador-id="<%= entrenador.usuarioId._id %>" style="display: none;">
+                                            0
+                                            <span class="visually-hidden">mensajes no leídos</span>
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        <% } else { %>
+                            <div class="no-trainer">
+                                <i class="fas fa-user-tie fa-3x mb-3"></i>
+                                <p>No tienes un entrenador asignado actualmente.</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Conectar a Socket.IO
+            const socket = io();
+            
+            // ID del cliente
+            const clienteId = '<%= cliente.usuarioId._id %>';
+            window.userId = clienteId;
+            
+            console.log('ID del cliente para notificaciones:', clienteId);
+            
+            // Obtener todos los badges de mensajes
+            const messageBadges = document.querySelectorAll('.message-count');
+            
+            // Crear un mapa para rastrear los contadores por entrenador
+            const messageCounters = {};
+            
+            // Inicializar los contadores
+            messageBadges.forEach(badge => {
+                const entrenadorId = badge.getAttribute('data-entrenador-id');
+                messageCounters[entrenadorId] = 0;
+            });
+            
+            // Solicitar notificaciones al conectar
+            socket.emit('get-notifications', { userId: clienteId });
+            
+            // Escuchar notificaciones
+            socket.on(`notifications-${clienteId}`, notification => {
+                console.log('Nueva notificación recibida:', notification);
+                
+                if (notification.type === 'message' && notification.senderId) {
+                    // Incrementar contador para este entrenador
+                    const entrenadorId = notification.senderId;
+                    messageCounters[entrenadorId] = (messageCounters[entrenadorId] || 0) + 1;
+                    
+                    // Actualizar badge
+                    updateBadge(entrenadorId, messageCounters[entrenadorId]);
+                }
+            });
+            
+            // Recibir contador de no leídas
+            socket.on(`unread-count-${clienteId}`, data => {
+                console.log('Contador de notificaciones no leídas recibido:', data);
+            });
+            
+            // Función para actualizar el badge de un entrenador específico
+            function updateBadge(entrenadorId, count) {
+                const badge = document.querySelector(`.message-count[data-entrenador-id="${entrenadorId}"]`);
+                if (badge) {
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.style.display = 'block';
+                        // Aplicar animación para llamar la atención
+                        badge.classList.add('animate-badge');
+                        setTimeout(() => {
+                            badge.classList.remove('animate-badge');
+                        }, 1000);
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            }
+            
+            // Verificar mensajes no leídos para cada entrenador
+            socket.on('connect', function() {
+                // Para cada entrenador, solicitar el estado de mensajes no leídos
+                messageBadges.forEach(badge => {
+                    const entrenadorId = badge.getAttribute('data-entrenador-id');
+                    
+                    // Emitir evento para obtener mensajes no leídos entre este entrenador y el cliente
+                    socket.emit('check-unread-messages', {
+                        senderId: entrenadorId,
+                        receiverId: clienteId
+                    });
+                });
+            });
+            
+            // Escuchar respuesta de mensajes no leídos
+            socket.on(`unread-messages-count`, data => {
+                if (data.senderId && data.count) {
+                    // Actualizar contador para este entrenador
+                    messageCounters[data.senderId] = data.count;
+                    updateBadge(data.senderId, data.count);
+                }
+            });
+        });
+    </script>
 </body>
 </html>

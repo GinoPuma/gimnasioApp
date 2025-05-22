@@ -161,6 +161,102 @@ class DietaController {
             res.status(500).json({ error: error.message });
         }
     }
+    
+    // Método para mostrar la página de asignación de dietas
+    async mostrarPaginaAsignarDieta(req, res) {
+        try {
+            console.log('Mostrando página de asignación de dieta');
+            console.log('Sesión:', req.session);
+            
+            const dietaId = req.params.id;
+            
+            if (!dietaId) {
+                console.error('ID de dieta no proporcionado');
+                return res.status(400).send('ID de dieta no proporcionado');
+            }
+            
+            // Obtener la dieta
+            const dieta = await dietaService.obtenerDieta(dietaId);
+            if (!dieta) {
+                console.error('Dieta no encontrada');
+                return res.status(404).send('Dieta no encontrada');
+            }
+            
+            console.log('Dieta encontrada:', dieta._id);
+            
+            // Obtener el entrenador de la sesión o de la dieta
+            let entrenadorId = null;
+            
+            // Intentar obtener el ID del entrenador de la sesión
+            if (req.session && req.session.usuario) {
+                console.log('Usando ID de entrenador de la sesión:', req.session.usuario._id);
+                entrenadorId = req.session.usuario._id;
+            }
+            
+            // Si no hay ID en la sesión, usar el ID del entrenador de la dieta
+            if (!entrenadorId && dieta.entrenadorId) {
+                console.log('Usando ID de entrenador de la dieta:', dieta.entrenadorId);
+                entrenadorId = dieta.entrenadorId;
+            }
+            
+            if (!entrenadorId) {
+                console.error('No se pudo obtener el ID del entrenador');
+                return res.status(401).send('No se pudo obtener el ID del entrenador');
+            }
+            
+            // Obtener los clientes del entrenador
+            const ClienteService = require('../services/clienteService');
+            const EntrenadorService = require('../services/entrenadorService');
+            
+            // Obtener el entrenador completo
+            const entrenador = await EntrenadorService.obtenerEntrenadorPorId(entrenadorId);
+            if (!entrenador) {
+                console.error('Entrenador no encontrado');
+                return res.status(404).send('Entrenador no encontrado');
+            }
+            
+            console.log('Entrenador encontrado:', entrenador._id);
+            
+            // Obtener los clientes del entrenador
+            const clientes = await ClienteService.obtenerClientesPorEntrenador(entrenador._id);
+            console.log(`Se encontraron ${clientes.length} clientes para el entrenador`);
+            
+            // Renderizar la vista
+            res.render('asignarDieta', {
+                title: 'Asignar Plan Nutricional',
+                dieta: dieta,
+                clientes: clientes,
+                usuario: req.session?.usuario || {},
+                idEntrenador: entrenador._id
+            });
+        } catch (error) {
+            console.error('Error al mostrar la página de asignación de dietas:', error);
+            res.status(500).render('error', { error: error.message });
+        }
+    }
+    
+    // Método para procesar la asignación de dietas mediante POST
+    async asignarDietaPost(req, res) {
+        try {
+            const dietaId = req.params.id;
+            const { clienteId } = req.body;
+            
+            if (!dietaId || !clienteId) {
+                return res.status(400).json({ error: 'Los IDs de dieta y cliente son obligatorios' });
+            }
+            
+            console.log(`Asignando dieta ${dietaId} al cliente ${clienteId}`);
+            const dietaActualizada = await dietaService.asignarDieta(dietaId, clienteId);
+            
+            // Redireccionar a la página de dietas con un mensaje de éxito
+            req.session.mensaje = { tipo: 'success', texto: 'Plan nutricional asignado correctamente' };
+            res.redirect('/entrenador/dashboard');
+        } catch (error) {
+            console.error('Error al asignar dieta:', error);
+            req.session.mensaje = { tipo: 'danger', texto: `Error al asignar plan nutricional: ${error.message}` };
+            res.redirect(`/dietas/asignar/${req.params.id}`);
+        }
+    }
 }
 
 module.exports = new DietaController();

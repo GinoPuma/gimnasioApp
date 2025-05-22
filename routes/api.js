@@ -40,6 +40,39 @@ router.get('/clientes', async (req, res) => {
     }
 });
 
+// Ruta para obtener lista simple de clientes para asignar
+router.get('/clientes/lista', async (req, res) => {
+    try {
+        // Obtener el ID del entrenador de la sesión si está disponible
+        const entrenadorId = req.session?.usuario?._id;
+        
+        let clientes = [];
+        
+        // Si hay un ID de entrenador en la sesión, filtrar por ese entrenador
+        if (entrenadorId) {
+            // Primero obtener el entrenador
+            const entrenador = await Entrenador.findOne({ usuarioId: entrenadorId });
+            if (entrenador) {
+                clientes = await Cliente.find({ entrenadorId: entrenador._id });
+            } else {
+                // Si no se encuentra el entrenador, devolver todos los clientes
+                clientes = await Cliente.find({});
+            }
+        } else {
+            // Si no hay ID de entrenador, devolver todos los clientes
+            clientes = await Cliente.find({});
+        }
+        
+        // Devolver la lista simple de clientes
+        res.json(clientes);
+    } catch (error) {
+        console.error('Error al obtener lista de clientes:', error);
+        res.status(500).json({
+            error: error.message
+        });
+    }
+});
+
 // Ruta para obtener todos los entrenadores
 router.get('/entrenadores', async (req, res) => {
     try {

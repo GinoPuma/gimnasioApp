@@ -5,6 +5,10 @@ const dietaController = require('../controllers/dietaController');
 // Rutas básicas para dietas
 router.post('/crear', (req, res) => dietaController.crearDieta(req, res));
 router.put('/asignar', (req, res) => dietaController.asignarDieta(req, res));
+router.post('/:id/asignar', (req, res) => dietaController.asignarDietaPost(req, res));
+
+// Nueva ruta para mostrar la página de asignación de dietas
+router.get('/asignar/:id', (req, res) => dietaController.mostrarPaginaAsignarDieta(req, res));
 
 // Rutas específicas para entrenadores y clientes (deben ir ANTES de las rutas con parámetros)
 router.get('/entrenador', (req, res) => dietaController.listarDietasPorEntrenador(req, res));

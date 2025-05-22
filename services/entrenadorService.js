@@ -9,12 +9,16 @@ class EntrenadorService {
         return await Entrenador.findOne({ usuarioId }).populate('usuarioId');
     }
 
+    async obtenerEntrenadorPorId(entrenadorId) {
+        return await Entrenador.findById(entrenadorId);
+    }
+
     async obtenerAllEntrenador(){
         return await Entrenador.find();
     }
 
     async actualizarEntrenador(usuarioId, datosActualizados){
-        return await Cliente.findOneAndUpdate(
+        return await Entrenador.findOneAndUpdate(
             { usuarioId },
             { $set: datosActualizados },
             { new: true, runValidators: true }

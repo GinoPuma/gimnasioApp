@@ -23,4 +23,4 @@ const entrenadorSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model('entrenadores', entrenadorSchema);
+module.exports = mongoose.model('Entrenador', entrenadorSchema);

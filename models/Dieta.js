@@ -3,12 +3,12 @@ const mongoose = require('mongoose');
 const dietaSchema = new mongoose.Schema({
     clienteId: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'clientes',
+        ref: 'Cliente',
         required: false
     },
     entrenadorId: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'entrenadores',
+        ref: 'Entrenador',
         required: true
     },
     nombre: { 
@@ -62,4 +62,4 @@ dietaSchema.pre('save', function(next) {
     next();
 });
   
-module.exports = mongoose.model('dietas', dietaSchema);
+module.exports = mongoose.model('Dieta', dietaSchema);

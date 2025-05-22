@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const rutinaSchema = new mongoose.Schema({
-    clienteId: { type: mongoose.Schema.Types.ObjectId, ref: 'clientes' },
-    entrenadorId: { type: mongoose.Schema.Types.ObjectId, ref: 'entrenadores' },
+    clienteId: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente' },
+    entrenadorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Entrenador' },
     nombre: String,
     descripcion: String,
     duracionSemanas: Number,
@@ -24,4 +24,4 @@ const rutinaSchema = new mongoose.Schema({
     ]
 });
   
-module.exports = mongoose.model('rutinas', rutinaSchema);
+module.exports = mongoose.model('Rutina', rutinaSchema);

@@ -437,6 +437,9 @@ app.use('/admin', require('./routes/admin'));
 // Rutas para la API del panel de administrador
 app.use('/api/admin', require('./routes/adminPanel'));
 
+// Rutas para ChatIA (Ollama)
+app.use('/api/chatia', require('./routes/chatIA'));
+
 // Rutas para el chat
 app.use('/chat', require('./routes/chat'));
 

@@ -6,8 +6,22 @@ const Entrenador = require('../models/Entrenador');
 const usuarioService = require('../services/usuarioService');
 const bcrypt = require('bcryptjs');
 
-// Mostrar formulario de registro
+// Mostrar formulario de registro o redireccionar si ya hay sesión
 router.get('/registro', (req, res) => {
+  // Verificar si ya hay una sesión activa
+  if (req.session && req.session.usuario) {
+    console.log('Usuario ya autenticado, redireccionando al dashboard correspondiente');
+    
+    // Redireccionar según el tipo de usuario
+    if (req.session.usuario.tipoUsuario === 'cliente') {
+      return res.redirect(`/frontend/clientes/${req.session.usuario._id}`);
+    } else if (req.session.usuario.tipoUsuario === 'entrenador') {
+      return res.redirect(`/frontend/entrenadores/${req.session.usuario._id}`);
+    } else if (req.session.usuario.tipoUsuario === 'administrador') {
+      return res.redirect('/admin/dashboard');
+    }
+  }
+  
   // Obtener mensajes de la URL si existen
   let error = null;
   let success = null;
@@ -53,8 +67,23 @@ router.get('/registro', (req, res) => {
   res.render('registro', { error, success });
 });
 
-// Mostrar formulario de login
+// Mostrar formulario de login o redireccionar si ya hay sesión
 router.get('/login', (req, res) => {
+  // Verificar si ya hay una sesión activa
+  if (req.session && req.session.usuario) {
+    console.log('Usuario ya autenticado, redireccionando al dashboard correspondiente');
+    
+    // Redireccionar según el tipo de usuario
+    if (req.session.usuario.tipoUsuario === 'cliente') {
+      return res.redirect(`/frontend/clientes/${req.session.usuario._id}`);
+    } else if (req.session.usuario.tipoUsuario === 'entrenador') {
+      return res.redirect(`/frontend/entrenadores/${req.session.usuario._id}`);
+    } else if (req.session.usuario.tipoUsuario === 'administrador') {
+      return res.redirect('/admin/dashboard');
+    }
+  }
+  
+  // Si no hay sesión, mostrar el formulario de login
   res.render('login');
 });
 

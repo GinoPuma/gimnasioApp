@@ -16,16 +16,18 @@ app.use(cors());
 app.use(express.json());  // Para procesar datos JSON
 app.use(express.urlencoded({ extended: true }));  // Para procesar datos de formularios (x-www-form-urlencoded)
 
-// Configuración de sesiones mejorada
+// Configuración de sesiones mejorada para mayor persistencia
 app.use(session({
     secret: 'gimnasioAppSecretKey',
-    resave: false,
-    saveUninitialized: false, // Cambiado a false para evitar crear sesiones vacías
+    resave: true,
+    saveUninitialized: true, // Cambiado a true para mantener sesiones incluso sin datos
     cookie: { 
         secure: process.env.NODE_ENV === 'production', // Solo seguro en producción
-        maxAge: 24 * 60 * 60 * 1000, // 24 horas
-        httpOnly: true // Previene acceso desde JavaScript del cliente
-    }
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días (un mes)
+        httpOnly: true, // Previene acceso desde JavaScript del cliente
+        path: '/' // Asegura que la cookie sea válida en toda la aplicación
+    },
+    rolling: true // Renueva el tiempo de expiración con cada petición
 }));
 
 // Importar middleware de autenticación
@@ -55,6 +57,21 @@ app.use(express.static(path.join(__dirname, 'frontend/public')));
 
 // Rutas de las vistas
 app.get('/', (req, res) => {
+    // Verificar si ya hay una sesión activa
+    if (req.session && req.session.usuario) {
+        console.log('Usuario ya autenticado, redireccionando al dashboard correspondiente');
+        
+        // Redireccionar según el tipo de usuario
+        if (req.session.usuario.tipoUsuario === 'cliente') {
+            return res.redirect(`/frontend/clientes/${req.session.usuario._id}`);
+        } else if (req.session.usuario.tipoUsuario === 'entrenador') {
+            return res.redirect(`/frontend/entrenadores/${req.session.usuario._id}`);
+        } else if (req.session.usuario.tipoUsuario === 'administrador') {
+            return res.redirect('/admin/dashboard');
+        }
+    }
+    
+    // Si no hay sesión, mostrar el formulario de login
     res.render('login'); 
 });
 
@@ -419,6 +436,20 @@ app.use('/admin', require('./routes/admin'));
 
 // Rutas para el chat
 app.use('/chat', require('./routes/chat'));
+
+// Ruta para cerrar sesión
+app.get('/logout', (req, res) => {
+    // Destruir la sesión
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error al cerrar sesión:', err);
+            return res.status(500).send('Error al cerrar sesión');
+        }
+        
+        // Redireccionar al login
+        res.redirect('/frontend/login');
+    });
+});
 
 // Configuración de Socket.IO
 const http = require('http');

@@ -437,6 +437,9 @@ app.use('/admin', require('./routes/admin'));
 // Rutas para el chat
 app.use('/chat', require('./routes/chat'));
 
+// Rutas para la información del gimnasio
+app.use('/gimnasio', require('./routes/gimnasio'));
+
 // Ruta para cerrar sesión
 app.get('/logout', (req, res) => {
     // Destruir la sesión
@@ -467,7 +470,7 @@ try {
 }
 
 // Puerto de escucha
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
     console.log(`Aplicación ejecutándose en http://localhost:${PORT}`);
 });

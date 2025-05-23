@@ -367,13 +367,43 @@ router.get('/entrenadores/:id', async (req, res) => {
       observaciones: cliente.observaciones || ''
     }));
     
-    // Renderizar la vista con los datos
+    // Contar las citas de hoy (si existe el modelo de citas)
+    let citasHoy = 0;
+    try {
+      // Verificar si existe el modelo de Cita
+      const Cita = require('../models/Cita');
+      const hoy = new Date();
+      const inicioDia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+      const finDia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 1);
+      
+      // Contar citas para el día de hoy
+      citasHoy = await Cita.countDocuments({
+        entrenadorId: entrenador._id,
+        fecha: { $gte: inicioDia, $lt: finDia }
+      });
+    } catch (error) {
+      console.log('No se pudo contar las citas (posiblemente el modelo no existe):', error.message);
+      // No hacemos nada si el modelo no existe, simplemente dejamos citasHoy en 0
+    }
+    
+    // Contar los datos reales
+    const contadores = {
+      clientesActivos: clientes.length,
+      rutinasCreadas: rutinas.length,
+      dietasCreadas: dietas.length,
+      citasHoy: citasHoy
+    };
+    
+    console.log('Contadores para el dashboard:', contadores);
+    
+    // Renderizar la vista con los datos reales
     res.render('entrenadorDashboard', {
       nombre: entrenador.usuarioId.nombre,
       idEntrenador: entrenador._id,
       rutinas: rutinas || [], // Pasar las rutinas o un array vacío si no hay
       dietas: dietas || [], // Pasar las dietas o un array vacío si no hay
-      clientes: clientesData || [] // Pasar los clientes asignados
+      clientes: clientesData || [], // Pasar los clientes asignados
+      contadores: contadores // Pasar los contadores para las etiquetas
     });
   } catch (error) {
     console.error('Error al cargar entrenador:', error);

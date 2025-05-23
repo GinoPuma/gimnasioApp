@@ -444,28 +444,28 @@
                         <div class="col-md-3 mb-4">
                             <div class="dashboard-card stats-card">
                                 <i class="fas fa-users fa-3x text-primary"></i>
-                                <div class="stats-number">24</div>
+                                <div class="stats-number"><%= typeof contadores !== 'undefined' ? contadores.clientesActivos : 0 %></div>
                                 <div class="stats-label">Clientes Activos</div>
                             </div>
                         </div>
                         <div class="col-md-3 mb-4">
                             <div class="dashboard-card stats-card">
                                 <i class="fas fa-dumbbell fa-3x text-warning"></i>
-                                <div class="stats-number">56</div>
+                                <div class="stats-number"><%= typeof contadores !== 'undefined' ? contadores.rutinasCreadas : 0 %></div>
                                 <div class="stats-label">Rutinas Creadas</div>
                             </div>
                         </div>
                         <div class="col-md-3 mb-4">
                             <div class="dashboard-card stats-card">
                                 <i class="fas fa-utensils fa-3x text-success"></i>
-                                <div class="stats-number">42</div>
+                                <div class="stats-number"><%= typeof contadores !== 'undefined' ? contadores.dietasCreadas : 0 %></div>
                                 <div class="stats-label">Planes Nutricionales</div>
                             </div>
                         </div>
                         <div class="col-md-3 mb-4">
                             <div class="dashboard-card stats-card">
                                 <i class="fas fa-calendar-check fa-3x text-info"></i>
-                                <div class="stats-number">8</div>
+                                <div class="stats-number"><%= typeof contadores !== 'undefined' ? contadores.citasHoy : 0 %></div>
                                 <div class="stats-label">Citas Hoy</div>
                             </div>
                         </div>
@@ -2389,42 +2389,120 @@
             
             // Evento para confirmar la asignación
             confirmarAsignarRutina.addEventListener('click', function() {
+                // Obtener los valores del formulario
                 const rutinaId = rutinaIdModal.value;
                 const clienteId = clienteIdModal.value;
                 
+                // Validar que se haya seleccionado un cliente
                 if (!clienteId) {
                     alert('Por favor, selecciona un cliente');
                     return;
                 }
                 
-                console.log('Enviando solicitud para asignar rutina:', { rutinaId, clienteId });
+                // Obtener el nombre del cliente seleccionado
+                const clienteNombre = clienteIdModal.options[clienteIdModal.selectedIndex].text;
+                
+                // Mostrar información en la consola para depuración
+                console.log('Enviando solicitud para asignar rutina:', { 
+                    rutinaId: rutinaId, 
+                    clienteId: clienteId, 
+                    clienteNombre: clienteNombre 
+                });
                 
                 // Deshabilitar botón mientras se procesa
                 confirmarAsignarRutina.disabled = true;
                 confirmarAsignarRutina.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Asignando...';
                 
-                // Crear un formulario y enviarlo directamente
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/rutinas/asignar-directo';
-                form.style.display = 'none';
+                // Mostrar notificación de procesamiento
+                const contenedor = document.querySelector('.main-container');
+                const notificacionDiv = document.createElement('div');
+                notificacionDiv.className = 'alert alert-info alert-dismissible fade show';
+                notificacionDiv.innerHTML = `
+                    <strong>Procesando:</strong> Asignando rutina a ${clienteNombre}...
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
                 
-                const rutinaIdInput = document.createElement('input');
-                rutinaIdInput.type = 'hidden';
-                rutinaIdInput.name = 'rutinaId';
-                rutinaIdInput.value = rutinaId;
-                form.appendChild(rutinaIdInput);
+                if (contenedor) {
+                    contenedor.prepend(notificacionDiv);
+                }
                 
-                const clienteIdInput = document.createElement('input');
-                clienteIdInput.type = 'hidden';
-                clienteIdInput.name = 'clienteId';
-                clienteIdInput.value = clienteId;
-                form.appendChild(clienteIdInput);
-                
-                document.body.appendChild(form);
-                
-                // Enviar el formulario
-                form.submit();
+                // Enviar la solicitud al servidor
+                fetch('/rutinas/asignar', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rutinaId: rutinaId,
+                        clienteId: clienteId
+                    })
+                })
+                .then(response => {
+                    console.log('Respuesta del servidor:', response.status, response.statusText);
+                    
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Error al asignar la rutina');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Rutina asignada con éxito:', data);
+                    
+                    // Cerrar el modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('asignarRutinaModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                    
+                    // Eliminar notificación de procesamiento
+                    if (notificacionDiv) {
+                        notificacionDiv.remove();
+                    }
+                    
+                    // Mostrar mensaje de éxito
+                    const exitoDiv = document.createElement('div');
+                    exitoDiv.className = 'alert alert-success alert-dismissible fade show';
+                    exitoDiv.innerHTML = `
+                        <strong>¡Éxito!</strong> Rutina asignada correctamente a ${clienteNombre}.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    
+                    if (contenedor) {
+                        contenedor.prepend(exitoDiv);
+                    }
+                    
+                    // Recargar la página para mostrar los cambios
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                })
+                .catch(error => {
+                    console.error('Error al asignar rutina:', error);
+                    
+                    // Eliminar notificación de procesamiento
+                    if (notificacionDiv) {
+                        notificacionDiv.remove();
+                    }
+                    
+                    // Mostrar mensaje de error
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'alert alert-danger alert-dismissible fade show';
+                    errorDiv.innerHTML = `
+                        <strong>Error:</strong> ${error.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    
+                    if (contenedor) {
+                        contenedor.prepend(errorDiv);
+                    }
+                })
+                .finally(() => {
+                    // Restaurar el botón
+                    confirmarAsignarRutina.disabled = false;
+                    confirmarAsignarRutina.innerHTML = 'Asignar';
+                });
             });
         });
     </script>

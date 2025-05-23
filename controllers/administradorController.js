@@ -1,6 +1,9 @@
 const administradorService = require('../services/administradorService');
 const Usuario = require('../models/Usuario');
+const Entrenador = require('../models/Entrenador');
+const Cliente = require('../models/Cliente');
 const CodigoVerificacion = require('../models/CodigoVerificacion');
+const Rutina = require('../models/Rutina');
 
 class AdministradorController {
     // Mostrar panel de administración
@@ -19,21 +22,69 @@ class AdministradorController {
 
             // Obtener datos para el panel
             const admin = await administradorService.obtenerAdministradorPorUsuario(usuarioId);
-            const entrenadores = await administradorService.listarEntrenadores();
-            const clientes = await administradorService.listarClientes();
+            
+            // Obtener entrenadores con todos sus datos
+            const entrenadores = await Entrenador.find()
+                .populate({
+                    path: 'usuarioId',
+                    select: 'nombre apellido correo telefono estado verificado'
+                });
+            
+            // Obtener clientes con todos sus datos
+            const clientes = await Cliente.find()
+                .populate({
+                    path: 'usuarioId',
+                    select: 'nombre apellido correo telefono estado verificado'
+                });
+            
+            // Obtener el número total de rutinas
+            const totalRutinas = await Rutina.countDocuments();
+            
+            // Obtener el número total de usuarios
+            const totalUsuarios = await Usuario.countDocuments();
+
+            // Obtener todas las rutinas para la pestaña de rutinas
+            const rutinas = await Rutina.find()
+                .populate({
+                    path: 'clienteId',
+                    populate: {
+                        path: 'usuarioId',
+                        select: 'nombre apellido'
+                    }
+                })
+                .populate({
+                    path: 'entrenadorId',
+                    populate: {
+                        path: 'usuarioId',
+                        select: 'nombre apellido'
+                    }
+                });
 
             // Obtener códigos de verificación generados por este administrador
-            const codigosVerificacion = await CodigoVerificacion.find({ 
-                generadoPor: admin._id 
-            }).sort({ fechaCreacion: -1 });
+            const codigosVerificacion = await CodigoVerificacion.find()
+                .sort({ fechaCreacion: -1 })
+                .limit(10);
 
+            // Calcular totales para el dashboard
+            const totalEntrenadores = entrenadores.length;
+            const totalClientes = clientes.length;
+            
+            // Crear un array vacío para actividades recientes (se implementará en el futuro)
+            const actividades = [];
+            
             // Renderizar vista de administración
             return res.render('adminDashboard', {
                 admin,
                 usuario,
                 entrenadores,
                 clientes,
+                rutinas,
                 codigosVerificacion,
+                totalRutinas,
+                totalUsuarios,
+                totalEntrenadores,
+                totalClientes,
+                actividades,
                 mensaje: req.query.mensaje,
                 error: req.query.error
             });

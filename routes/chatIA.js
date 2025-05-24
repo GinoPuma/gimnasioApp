@@ -3,7 +3,10 @@ const router = express.Router();
 const { exec } = require('child_process');
 
 // Configuración para Ollama
-const OLLAMA_MODEL = 'llama3.1:8b';
+const OLLAMA_MODEL = 'gimnasio-app'; // Modelo personalizado para el gimnasio
+const OLLAMA_FALLBACK_MODEL = 'llama3.1:8b'; // Modelo de respaldo si el personalizado no está disponible
+const OLLAMA_HOST = 'localhost';
+const OLLAMA_PORT = 11434;
 
 // Sistema de respuestas inteligentes para fallback cuando Ollama no está disponible
 const respuestasInteligentes = {
@@ -32,29 +35,25 @@ const respuestasInteligentes = {
     'descanso': 'El descanso es tan importante como el entrenamiento. Tus músculos crecen durante el descanso, no durante el ejercicio. Asegúrate de dormir 7-8 horas diarias.',
     'frecuencia': 'Para principiantes, 3-4 sesiones semanales son ideales. Deportistas avanzados pueden entrenar 5-6 días, alternando grupos musculares para permitir la recuperación.',
     
-    
     // Nutrición
     'dieta': 'Una buena dieta debe ser equilibrada e incluir proteínas, carbohidratos complejos y grasas saludables. ¿Tienes algún objetivo específico con tu alimentación?',
     'proteina': 'Las proteínas son esenciales para la recuperación y crecimiento muscular. Buenas fuentes incluyen pollo, pescado, huevos, lácteos, legumbres y suplementos como whey protein.',
     'carbohidratos': 'Los carbohidratos son tu principal fuente de energía. Opta por carbohidratos complejos como arroz integral, avena, patatas y legumbres para una liberación sostenida de energía.',
-    'grasas': 'Las grasas saludables son esenciales para la producción hormonal y la absorción de vitaminas. Incluye aguacate, frutos secos, aceite de oliva y pescados grasos en tu dieta.',
-    'calorias': 'Para perder peso, necesitas un déficit calórico (consumir menos calorías de las que gastas). Para ganar masa muscular, necesitas un superhábit calórico moderado.',
+    'grasas': 'Las grasas saludables son esenciales para la producción hormonal. Incluye aguacates, frutos secos, aceite de oliva y pescados grasos en tu dieta.',
+    'calorias': 'Las calorías necesarias dependen de tu metabolismo, nivel de actividad y objetivos. Para mantenimiento, multiplica tu peso en kg por 30-35 si eres activo.',
     'agua': 'La hidratación es fundamental para el rendimiento. Bebe al menos 2-3 litros de agua al día, más si entrenas intensamente o hace calor.',
     'comidas': 'Es recomendable hacer 4-6 comidas pequeñas al día para mantener estables los niveles de energía y facilitar la digestión.',
     
     // Objetivos específicos
-    'perder peso': 'Para perder peso, combina un déficit calórico moderado (300-500 calorías menos al día) con entrenamiento de fuerza y cardio. La consistencia es clave.',
-    'ganar musculo': 'Para ganar músculo, necesitas un superhábit calórico moderado, entrenamiento de fuerza progresivo y suficiente proteína (1.6-2g por kg de peso corporal).',
-    'definicion': 'La definición muscular requiere un bajo porcentaje de grasa corporal. Combina un déficit calórico con entrenamiento de fuerza para preservar la masa muscular.',
-    'resistencia': 'Para mejorar la resistencia, incrementa gradualmente la duración e intensidad de tus sesiones de cardio. Incluye entrenamiento por intervalos para mejores resultados.',
-    'fuerza': 'Para aumentar la fuerza, enfócate en ejercicios compuestos con cargas pesadas (80-90% de tu 1RM) y pocas repeticiones (3-6).',
-    'flexibilidad': 'Para mejorar la flexibilidad, incluye sesiones regulares de estiramiento, yoga o pilates. La consistencia es más importante que la intensidad.',
+    'perder peso': 'Para perder peso de forma saludable, combina déficit calórico moderado (300-500 calorías menos), entrenamiento de fuerza y cardio, y asegúrate de consumir suficiente proteína.',
+    'ganar musculo': 'Para ganar músculo, necesitas un superávit calórico moderado, entrenamiento de fuerza progresivo y suficiente proteína (1.6-2g por kg de peso corporal).',
+    'tonificar': 'La tonificación implica reducir grasa corporal y desarrollar músculo. Combina entrenamiento de fuerza con alta repetición, cardio moderado y una dieta rica en proteínas.',
+    'resistencia': 'Para mejorar la resistencia, incrementa gradualmente la duración e intensidad de tus entrenamientos cardiovasculares y trabaja en circuitos con poco descanso entre ejercicios.',
     
     // Lesiones y recuperación
     'lesion': 'Si tienes una lesión, consulta con un profesional médico antes de volver a entrenar. La recuperación adecuada es fundamental para evitar lesiones crónicas.',
     'dolor': 'Es normal sentir algo de dolor muscular después de entrenar (DOMS), pero el dolor agudo o en articulaciones puede indicar una lesión. Consulta con un profesional si persiste.',
-    'recuperacion': 'La recuperación incluye descanso adecuado, nutrición, hidratación y técnicas como estiramientos, masajes o baños de contraste.',
-    'sobreentrenamiento': 'El sobreentrenamiento puede causar fatiga crónica, bajo rendimiento y mayor riesgo de lesiones. Asegúrate de incluir días de descanso en tu rutina.',
+    'recuperacion': 'La recuperación incluye descanso adecuado, nutrición apropiada, hidratación, estiramiento y técnicas como masajes, baños de contraste o rodillos de espuma.',
     
     // Respuesta por defecto
     'default': 'Estoy aquí para ayudarte con tus preguntas sobre fitness y entrenamiento. ¿En qué puedo asistirte hoy?'
@@ -65,34 +64,21 @@ const respuestasGenerales = {
     // Preguntas sobre tiempo
     'cuantos dias tiene la semana': 'La semana tiene 7 días: lunes, martes, miércoles, jueves, viernes, sábado y domingo.',
     'cuantos meses tiene el año': 'El año tiene 12 meses: enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre y diciembre.',
-    'cuantas horas tiene un dia': 'Un día tiene 24 horas.',
-    'cuantos minutos tiene una hora': 'Una hora tiene 60 minutos.',
-    'cuantos segundos tiene un minuto': 'Un minuto tiene 60 segundos.',
+    'cuantas horas tiene el dia': 'El día tiene 24 horas.',
+    'que hora es': 'No tengo acceso a la hora actual. Por favor, consulta tu reloj o dispositivo.',
+    'que dia es hoy': 'No tengo acceso a la fecha actual. Por favor, consulta tu calendario o dispositivo.',
     
-    // Preguntas de matemáticas básicas
-    'cuanto es 1 + 1': 'La suma de 1 + 1 es igual a 2.',
-    'cuanto es 1 - 1': 'La resta de 1 - 1 es igual a 0.',
-    'cuanto es 2 x 2': 'La multiplicación de 2 x 2 es igual a 4.',
-    'cuanto es 10 / 2': 'La división de 10 / 2 es igual a 5.',
-    
-    // Preguntas de geografía
-    'cual es la capital de francia': 'La capital de Francia es París.',
-    'cual es la capital de españa': 'La capital de España es Madrid.',
-    'cual es la capital de italia': 'La capital de Italia es Roma.',
-    
-    // Preguntas sobre el asistente
+    // Preguntas sobre identidad
     'quien eres': 'Soy ChatIA, tu asistente de fitness diseñado para ayudarte con tus rutinas de ejercicio, nutrición y bienestar general.',
     'como te llamas': 'Me llamo ChatIA, soy tu asistente virtual especializado en fitness y entrenamiento.',
     'que eres': 'Soy un asistente virtual especializado en fitness y nutrición, diseñado para ayudarte a alcanzar tus objetivos de salud y bienestar.',
-    'que puedes hacer': 'Puedo ayudarte con recomendaciones de ejercicios, consejos nutricionales, planes de entrenamiento y responder preguntas sobre fitness en general.',
+    'donde vives': 'Existo en el mundo digital, siempre disponible para ayudarte con tus consultas sobre fitness y bienestar.',
+    'cuantos años tienes': 'Soy un asistente virtual, por lo que no tengo edad como los humanos. Estoy aquí para ayudarte con tus preguntas sobre fitness.',
     
     // Saludos y despedidas
-    'hola': '¡Hola! Soy tu asistente de fitness. ¿En qué puedo ayudarte hoy?',
-    'buenos dias': 'Buenos días. ¿Listo para un día lleno de energía? ¿En qué puedo ayudarte?',
-    'buenas tardes': 'Buenas tardes. ¿Cómo va tu día de entrenamiento? ¿Necesitas alguna recomendación?',
-    'buenas noches': 'Buenas noches. Recuerda que un buen descanso es fundamental para la recuperación muscular. ¿En qué puedo ayudarte?',
-    'gracias': 'De nada. Estoy aquí para ayudarte con tus objetivos de fitness. ¿Hay algo más en lo que pueda asistirte?',
-    'adios': '¡Hasta pronto! Recuerda mantener la constancia en tu entrenamiento. ¡Tú puedes!',
+    'hola': '¡Hola! ¿En qué puedo ayudarte hoy?',
+    'adios': '¡Adiós! Recuerda mantenerte activo y cuidar tu alimentación.',
+    'gracias': 'De nada. Estoy aquí para ayudarte. ¿Necesitas algo más?',
     'chao': '¡Hasta pronto! No olvides mantenerte hidratado y descansar adecuadamente.',
     'hasta luego': '¡Hasta luego! Sigue con tu rutina de ejercicios y alimentación saludable.'
 };
@@ -100,12 +86,9 @@ const respuestasGenerales = {
 // Lista de palabras clave relacionadas con fitness para determinar si usar Ollama
 const palabrasClaveFitness = [
     'ejercicio', 'rutina', 'entrenamiento', 'musculo', 'peso', 'dieta', 'nutricion', 'proteina',
-    'cardio', 'fuerza', 'flexibilidad', 'estiramiento', 'calentamiento', 'recuperacion',
-    'abdominales', 'piernas', 'brazos', 'espalda', 'pecho', 'hombros', 'gluteos', 'core',
-    'calorias', 'grasa', 'adelgazar', 'tonificar', 'hipertrofia', 'definicion', 'volumen',
-    'suplementos', 'vitaminas', 'minerales', 'hidratacion', 'descanso', 'dormir', 'lesion',
-    'gimnasio', 'pesas', 'mancuernas', 'barra', 'maquina', 'banda', 'resistencia', 'repeticion',
-    'serie', 'set', 'descanso', 'frecuencia', 'intensidad', 'volumen', 'progresion', 'sobrecarga',
+    'carbohidrato', 'grasa', 'calorias', 'deficit', 'superavit', 'fuerza', 'cardio',
+    'resistencia', 'flexibilidad', 'estiramiento', 'calentamiento', 'recuperacion',
+    'lesion', 'descanso', 'suplemento', 'vitamina', 'mineral', 'hidratacion', 'agua',
     'aerobico', 'anaerobico', 'hiit', 'tabata', 'crossfit', 'yoga', 'pilates', 'calistenia',
     'correr', 'nadar', 'ciclismo', 'bicicleta', 'caminar', 'saltar', 'boxeo', 'artes marciales'
 ];
@@ -113,52 +96,143 @@ const palabrasClaveFitness = [
 // Función para determinar si una pregunta está relacionada con fitness
 function esPreguntaFitness(prompt) {
     const promptLower = prompt.toLowerCase();
-    
-    // Verificar si contiene alguna palabra clave de fitness
     return palabrasClaveFitness.some(palabra => promptLower.includes(palabra));
 }
 
-// Función para consultar a Ollama directamente usando el comando en la terminal
+// Función para consultar a Ollama usando la API HTTP
 function consultarOllamaDirecto(prompt) {
     return new Promise((resolve, reject) => {
-        // Esta función ahora solo se usa para preguntas de fitness
-        // La verificación de preguntas generales ya se hace en procesarMensaje
-        
-        // Escapar comillas en el prompt para evitar problemas en la línea de comandos
-        const promptEscapado = prompt.replace(/"/g, '\\"');
-        
-        // Comando para ejecutar Ollama con un tiempo máximo de ejecución
-        const comando = `ollama run ${OLLAMA_MODEL} "${promptEscapado}"`;
-        
-        console.log('Ejecutando Ollama directamente...');
+        console.log('Consultando a Ollama API...');
         console.log(`Prompt: ${prompt.substring(0, 50)}${prompt.length > 50 ? '...' : ''}`);
+        console.log(`Usando modelo: ${OLLAMA_MODEL}`);
         
-        // Aumentar significativamente el timeout para dar tiempo a Ollama
-        // 30 segundos es un buen equilibrio entre esperar lo suficiente y no demasiado
-        exec(comando, { timeout: 30000, windowsHide: true, maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
-            if (error) {
-                console.error('Error al ejecutar Ollama:', error);
-                return reject(error);
+        // Usar el módulo http para hacer la solicitud a la API de Ollama
+        const http = require('http');
+        
+        // Preparar los datos para la solicitud
+        const requestData = JSON.stringify({
+            model: OLLAMA_MODEL,
+            prompt: prompt,
+            stream: false,
+            options: {
+                temperature: 0.7,  // Ajustar para respuestas más creativas o más precisas
+                top_p: 0.9,        // Controla la diversidad de las respuestas
+                num_predict: 512   // Limitar la longitud de la respuesta
             }
-            
-            if (stderr) {
-                console.warn('Advertencia de Ollama:', stderr);
-            }
-            
-            // Procesar la respuesta
-            const respuesta = stdout.trim();
-            
-            // Verificar si la respuesta es válida
-            if (!respuesta || respuesta.length < 2) {
-                console.error('Respuesta de Ollama vacía o demasiado corta');
-                return reject(new Error('Respuesta de Ollama inválida'));
-            }
-            
-            console.log('Respuesta de Ollama recibida correctamente');
-            console.log(`Longitud de la respuesta: ${respuesta.length} caracteres`);
-            
-            resolve(respuesta);
         });
+        
+        // Configurar las opciones de la solicitud HTTP
+        const options = {
+            hostname: OLLAMA_HOST,
+            port: OLLAMA_PORT,
+            path: '/api/generate',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(requestData)
+            }
+        };
+        
+        // Crear y enviar la solicitud
+        const req = http.request(options, (res) => {
+            let data = '';
+            
+            // Recopilar los datos de la respuesta
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            // Procesar la respuesta cuando esté completa
+            res.on('end', () => {
+                try {
+                    // Verificar si la respuesta es JSON válido
+                    const responseObj = JSON.parse(data);
+                    
+                    // Verificar si la respuesta contiene el campo 'response'
+                    if (responseObj.response) {
+                        console.log('Respuesta de Ollama recibida correctamente');
+                        console.log(`Longitud de la respuesta: ${responseObj.response.length} caracteres`);
+                        resolve(responseObj.response);
+                    } else {
+                        console.error('Respuesta de Ollama no contiene el campo "response"');
+                        console.error('Respuesta completa:', data);
+                        reject(new Error('Formato de respuesta de Ollama inválido'));
+                    }
+                } catch (error) {
+                    console.error('Error al parsear la respuesta de Ollama:', error);
+                    console.error('Respuesta recibida:', data);
+                    reject(error);
+                }
+            });
+        });
+        
+        // Manejar errores de la solicitud
+        req.on('error', (error) => {
+            console.error('Error en la solicitud a Ollama:', error);
+            
+            // Intentar con el modelo de respaldo si el principal falla
+            if (OLLAMA_MODEL !== OLLAMA_FALLBACK_MODEL) {
+                console.log(`Intentando con modelo de respaldo: ${OLLAMA_FALLBACK_MODEL}`);
+                
+                // Crear una nueva solicitud con el modelo de respaldo
+                const fallbackData = JSON.stringify({
+                    model: OLLAMA_FALLBACK_MODEL,
+                    prompt: prompt,
+                    stream: false
+                });
+                
+                const fallbackOptions = {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Content-Length': Buffer.byteLength(fallbackData)
+                    }
+                };
+                
+                const fallbackReq = http.request(fallbackOptions, (fallbackRes) => {
+                    let fallbackData = '';
+                    
+                    fallbackRes.on('data', (chunk) => {
+                        fallbackData += chunk;
+                    });
+                    
+                    fallbackRes.on('end', () => {
+                        try {
+                            const fallbackResponse = JSON.parse(fallbackData);
+                            if (fallbackResponse.response) {
+                                console.log('Respuesta del modelo de respaldo recibida correctamente');
+                                resolve(fallbackResponse.response);
+                            } else {
+                                reject(new Error('Formato de respuesta del modelo de respaldo inválido'));
+                            }
+                        } catch (fallbackError) {
+                            reject(fallbackError);
+                        }
+                    });
+                });
+                
+                fallbackReq.on('error', () => {
+                    reject(error); // Rechazar con el error original si el respaldo también falla
+                });
+                
+                fallbackReq.write(fallbackData);
+                fallbackReq.end();
+                return;
+            }
+            
+            reject(error);
+        });
+        
+        // Establecer un timeout para la solicitud (2 minutos)
+        req.setTimeout(120000, () => {
+            req.destroy();
+            console.error('Timeout en la solicitud a Ollama');
+            reject(new Error('Timeout en la solicitud a Ollama'));
+        });
+        
+        // Enviar los datos
+        req.write(requestData);
+        req.end();
     });
 }
 
@@ -166,95 +240,201 @@ function consultarOllamaDirecto(prompt) {
 function obtenerRespuestaInteligente(mensaje) {
     const mensajeLower = mensaje.toLowerCase();
     
-    // Buscar coincidencias en el mensaje
-    let mejorCoincidencia = null;
-    let longitudMejorCoincidencia = 0;
-    
-    for (const [clave, valor] of Object.entries(respuestasInteligentes)) {
-        if (clave === 'default') continue; // Ignorar la respuesta por defecto en esta búsqueda
-        
+    // Primero buscamos en respuestas específicas de fitness
+    for (const [clave, respuesta] of Object.entries(respuestasInteligentes)) {
         if (mensajeLower.includes(clave)) {
-            // Si encontramos una coincidencia más larga, la usamos
-            if (clave.length > longitudMejorCoincidencia) {
-                mejorCoincidencia = valor;
-                longitudMejorCoincidencia = clave.length;
-            }
+            return respuesta;
         }
     }
     
-    // Si encontramos una coincidencia, la devolvemos
-    if (mejorCoincidencia) {
-        return mejorCoincidencia;
+    // Si no encontramos coincidencia, buscamos en respuestas generales
+    for (const [clave, respuesta] of Object.entries(respuestasGenerales)) {
+        if (mensajeLower.includes(clave)) {
+            return respuesta;
+        }
     }
     
-    // Si no hay coincidencias, devolvemos la respuesta por defecto
+    // Si no hay coincidencia, devolvemos la respuesta por defecto
     return respuestasInteligentes.default;
 }
 
 // Función para verificar si Ollama está disponible ejecutando un comando simple
-async function verificarOllama() {
+function verificarOllama() {
     return new Promise((resolve) => {
         console.log('Verificando disponibilidad de Ollama...');
         
-        // Comando para verificar si Ollama está disponible
-        const comando = `ollama list`;
+        // Usar la API HTTP para verificar si Ollama está disponible
+        const http = require('http');
         
-        // Ejecutar el comando con un timeout corto
-        exec(comando, { timeout: 5000, windowsHide: true }, (error, stdout, stderr) => {
-            if (error) {
-                console.error('Error al verificar Ollama:', error);
-                resolve(false);
-                return;
-            }
-            
-            // Verificar si el modelo que necesitamos está disponible
-            if (stdout.includes(OLLAMA_MODEL)) {
-                console.log(`Modelo ${OLLAMA_MODEL} disponible en Ollama`);
-                resolve(true);
-            } else {
-                console.log(`Modelo ${OLLAMA_MODEL} no encontrado en Ollama. Modelos disponibles:`);
-                console.log(stdout);
-                resolve(false);
-            }
+        // Datos para la solicitud de prueba
+        const requestData = JSON.stringify({
+            model: OLLAMA_MODEL,
+            prompt: "Hola",
+            stream: false
         });
+        
+        // Opciones para la solicitud HTTP
+        const options = {
+            hostname: OLLAMA_HOST,
+            port: OLLAMA_PORT,
+            path: '/api/generate',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(requestData)
+            }
+        };
+        
+        // Crear la solicitud HTTP con un timeout corto
+        const req = http.request(options, (res) => {
+            // Si recibimos una respuesta, Ollama está disponible
+            resolve(res.statusCode === 200);
+        });
+        
+        // Establecer un timeout corto (5 segundos)
+        req.setTimeout(5000, () => {
+            req.destroy();
+            console.log('Timeout al verificar Ollama');
+            resolve(false);
+        });
+        
+        // Manejar errores
+        req.on('error', () => {
+            console.log('Error al verificar Ollama');
+            resolve(false);
+        });
+        
+        // Enviar la solicitud
+        req.write(requestData);
+        req.end();
     });
 }
 
-// Función principal para procesar un mensaje
-async function procesarMensaje(mensaje, clienteId) {
-    try {
-        console.log(`[ChatIA] Cliente ${clienteId || 'anónimo'}: ${mensaje}`);
-        
-        // Primero intentamos usar Ollama para cualquier pregunta
-        console.log('Intentando usar Ollama para la pregunta...');
-        try {
-            const respuesta = await consultarOllamaDirecto(mensaje);
-            console.log('[ChatIA] Respuesta de Ollama:', respuesta.substring(0, 100) + (respuesta.length > 100 ? '...' : ''));
-            return respuesta;
-        } catch (error) {
-            console.error('Error al usar Ollama, usando sistema de respuestas inteligentes:', error.message);
-            
-            // Si Ollama falla, intentamos con respuestas predefinidas
-            const mensajeLower = mensaje.toLowerCase();
-            
-            // Primero verificamos si hay una respuesta predefinida general
-            for (const [clave, valor] of Object.entries(respuestasGenerales)) {
-                if (mensajeLower.includes(clave)) {
-                    console.log('Usando respuesta predefinida para pregunta general');
-                    console.log('[ChatIA] Respuesta predefinida:', valor);
-                    return valor;
-                }
-            }
-            
-            // Si no hay respuesta predefinida, usamos el sistema de respuestas inteligentes
-            console.log('Usando sistema de respuestas inteligentes como fallback');
-            const respuestaInteligente = obtenerRespuestaInteligente(mensaje);
-            console.log('[ChatIA] Respuesta inteligente:', respuestaInteligente);
-            return respuestaInteligente;
+// Palabras clave para el sistema de semáforo
+const palabrasRojo = [
+    'precio', 'precios', 'costo', 'costos', 'tarifa', 'tarifas', 'mensualidad', 'pago', 'pagos',
+    'membresia', 'inscripcion', 'inscribirme', 'inscribirse', 'registrarse', 'registro',
+    'cuanto cuesta', 'cuanto vale', 'cuanto es', 'cuanto sale', 'cuanto cobran',
+    'promocion', 'descuento', 'oferta', 'plan', 'planes', 'basico', 'premium', 'plus'
+];
+
+const palabrasAmarillo = [
+    'horario', 'horarios', 'hora', 'horas', 'dias', 'abierto', 'cerrado', 'clase', 'clases',
+    'entrenador', 'entrenadores', 'instructor', 'instructores', 'profesor', 'profesores',
+    'personal', 'personalizado', 'grupal', 'grupales', 'yoga', 'pilates', 'spinning', 'zumba',
+    'funcional', 'crossfit', 'musculación', 'cardio', 'evaluación', 'asesoría'
+];
+
+// Función para evaluar el nivel de interés (semáforo)
+function evaluarInteres(mensaje) {
+    const mensajeLower = mensaje.toLowerCase();
+    
+    // Nivel ROJO: Alto interés - Preguntas sobre precios, pagos, inscripciones
+    for (const palabra of palabrasRojo) {
+        if (mensajeLower.includes(palabra)) {
+            return {
+                nivel: 'rojo',
+                emoji: '🔴',
+                descripcion: 'Alto interés - Pregunta por precios, pagos o inscripción'
+            };
         }
+    }
+    
+    // Nivel AMARILLO: Interés medio - Preguntas sobre planes, clases, entrenadores
+    for (const palabra of palabrasAmarillo) {
+        if (mensajeLower.includes(palabra)) {
+            return {
+                nivel: 'amarillo',
+                emoji: '🟡',
+                descripcion: 'Interés medio - Pregunta por planes o clases'
+            };
+        }
+    }
+    
+    // Si no contiene ninguna palabra clave especial, es nivel verde (interés general)
+    return {
+        nivel: 'verde',
+        emoji: '🟢',
+        descripcion: 'Interés general - Hace preguntas generales'
+    };
+}
+
+// Función principal para procesar mensajes
+async function procesarMensaje(mensaje, clienteId = null) {
+    console.log(`[ChatIA] Procesando mensaje: "${mensaje}" para cliente ID: ${clienteId || 'anónimo'}`);
+    
+    // Evaluar nivel de interés del cliente basado en su mensaje
+    const interes = evaluarInteres(mensaje);
+    console.log(`[ChatIA] Nivel de interés: ${interes.emoji} ${interes.nivel} - ${interes.descripcion}`);
+    
+    try {
+        // Construir un prompt más detallado para Ollama incluyendo información del gimnasio
+        const prompt = `
+        Eres un asistente virtual para un gimnasio llamado "Fitness Center". 
+        
+        INFORMACIÓN DEL GIMNASIO:
+        - PLAN BÁSICO: 100 soles/mes - Incluye acceso ilimitado a sala de musculación, horario completo, vestidores y duchas.
+        - PLAN PLUS: 150 soles/mes - Incluye todo lo del plan básico, acceso a todas las clases grupales y 1 evaluación física mensual.
+        - PLAN PREMIUM: 200 soles/mes - Incluye todo lo del plan plus, 2 sesiones mensuales con entrenador personal, 1 evaluación nutricional mensual y acceso a la zona de hidroterapia.
+        
+        HORARIOS:
+        - Lunes a viernes: 6:00 AM a 10:00 PM
+        - Sábados: 8:00 AM a 8:00 PM
+        - Domingos y feriados: 9:00 AM a 2:00 PM
+        
+        CLASES GRUPALES:
+        - Lunes: Spinning (8:00 AM, 7:00 PM), Zumba (10:00 AM, 6:00 PM)
+        - Martes: Yoga (9:00 AM), Funcional (6:00 PM, 8:00 PM)
+        - Miércoles: Pilates (10:00 AM), HIIT (7:00 PM)
+        - Jueves: Body Pump (9:00 AM, 7:00 PM), Stretching (6:00 PM)
+        - Viernes: Zumba (10:00 AM), Boxeo (7:00 PM)
+        - Sábado: Yoga (10:00 AM), Funcional (12:00 PM)
+        - Domingo: Pilates (10:00 AM)
+        
+        FORMAS DE PAGO:
+        - Efectivo
+        - Tarjetas de crédito/débito (Visa, Mastercard, American Express)
+        - Transferencia bancaria
+        - Yape o Plin
+        - Débito automático (para planes trimestrales o anuales)
+        
+        INSCRIPCIÓN:
+        - Costo: 50 soles (incluye carnet de socio y evaluación física inicial)
+        - Documentos: DNI o pasaporte y comprobante de domicilio
+        - Promoción actual: 2x1 en inscripciones para nuevos miembros (válida hasta fin de mes)
+        
+        INSTRUCCIONES:
+        - Responde de manera concisa, profesional y amigable.
+        - Si te preguntan por precios, proporciona los montos exactos en soles.
+        - Si te preguntan por horarios o clases, proporciona la información exacta.
+        - Si no sabes algo, di que consultarán con un entrenador para proporcionar la información correcta.
+        - No inventes información que no esté en los datos proporcionados.
+        
+        El cliente pregunta: "${mensaje}"
+        Tu respuesta:`;
+        
+        // Intentar obtener respuesta de Ollama
+        console.log('[ChatIA] Consultando a Ollama con el modelo personalizado...');
+        const respuestaOllama = await consultarOllamaDirecto(prompt);
+        
+        // Si llegamos aquí, Ollama respondió correctamente
+        console.log('[ChatIA] Respuesta de Ollama obtenida con éxito');
+        return {
+            respuesta: respuestaOllama,
+            interes: interes,
+            fuente: 'ollama'
+        };
     } catch (error) {
-        console.error('Error general en procesarMensaje:', error);
-        return 'Lo siento, ha ocurrido un error al procesar tu mensaje. Por favor, inténtalo de nuevo más tarde.';
+        console.error(`[ChatIA] Error al consultar Ollama: ${error.message}`);
+        console.log('[ChatIA] Usando sistema de respuestas inteligentes como fallback');
+        
+        // Si Ollama falla, usar el sistema de respuestas inteligentes
+        const respuestaInteligente = obtenerRespuestaInteligente(mensaje);
+        return {
+            respuesta: respuestaInteligente,
+            interes: interes,
+            fuente: 'fallback'
+        };
     }
 }
 
@@ -310,11 +490,13 @@ router.post('/mensaje', async (req, res) => {
             return res.status(400).json({ error: 'El mensaje es requerido' });
         }
         
-        const respuesta = await procesarMensaje(mensaje, clienteId);
-        console.log(`[ChatIA] Respuesta final: ${respuesta.substring(0, 100)}${respuesta.length > 100 ? '...' : ''}`);
+        const resultado = await procesarMensaje(mensaje, clienteId);
+        console.log(`[ChatIA] Respuesta final: ${resultado.respuesta.substring(0, 100)}${resultado.respuesta.length > 100 ? '...' : ''}`);
+        console.log(`[ChatIA] Nivel de interés: ${resultado.interes.emoji} ${resultado.interes.nivel}`);
         
         return res.json({
-            respuesta,
+            respuesta: resultado.respuesta,
+            interes: resultado.interes,
             modo: 'ollama_directo'
         });
     } catch (error) {
@@ -335,12 +517,17 @@ router.post('/fallback', (req, res) => {
             return res.status(400).json({ error: 'El mensaje es requerido' });
         }
         
+        // Evaluar el nivel de interés del cliente
+        const interes = evaluarInteres(mensaje);
+        console.log(`[ChatIA] Nivel de interés: ${interes.emoji} ${interes.nivel} - ${interes.descripcion}`);
+        
         // Obtener respuesta inteligente
         const respuesta = obtenerRespuestaInteligente(mensaje);
         console.log(`[ChatIA] Respuesta fallback: ${respuesta}`);
         
         res.json({ 
             respuesta,
+            interes,
             modo: 'respuestas_inteligentes'
         });
     } catch (error) {

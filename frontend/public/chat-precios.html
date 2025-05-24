@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat del Gimnasio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #16222a 0%, #3a6073 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .chat-container {
+            background: rgba(255, 255, 255, 0.05);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-header h2 {
+            color: #16222a;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chat-header a {
+            color: #16222a;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .chat-header a:hover {
+            transform: translateX(-5px);
+        }
+        
+        .chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            padding: 12px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            position: relative;
+            word-break: break-word;
+            white-space: pre-line;
+        }
+        
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            border-radius: 15px 15px 0 15px;
+            color: #16222a;
+        }
+        
+        .message.bot {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px 15px 15px 0;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .interest-indicator {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .interest-red {
+            background-color: #ff4d4d;
+        }
+        
+        .interest-yellow {
+            background-color: #ffcc00;
+        }
+        
+        .interest-green {
+            background-color: #66cc66;
+        }
+        
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border-radius: 30px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            outline: none;
+        }
+        
+        .chat-input input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .chat-input button {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .chat-input button:hover {
+            transform: scale(1.1);
+        }
+        
+        .chat-input button i {
+            color: #16222a;
+        }
+        
+        /* Animación para los puntos de carga */
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+        }
+        
+        .loading {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .loading .dot {
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        
+        .loading .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .loading .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2><i class="fas fa-robot"></i> Asistente IA</h2>
+            <a href="javascript:history.back()"><i class="fas fa-arrow-left"></i> Volver</a>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot">
+                ¡Hola! Soy tu asistente del gimnasio. ¿En qué puedo ayudarte hoy? Puedes preguntarme sobre precios, planes, horarios o promociones.
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="message-input" placeholder="Escribe tu mensaje aquí..." autofocus>
+            <button id="send-button"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+    
+    <script>
+        // Referencias a elementos del DOM
+        const chatMessages = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        
+        // Respuestas directas para preguntas comunes sobre el gimnasio
+        const respuestasGimnasio = {
+            // Precios y planes
+            'precio': `Tenemos los siguientes planes mensuales:
+
+- PLAN BÁSICO: 100 soles/mes
+  * Acceso ilimitado a sala de musculación
+  * Horario completo
+  * Vestidores y duchas
+
+- PLAN PLUS: 150 soles/mes
+  * Todo lo del plan básico
+  * Acceso a todas las clases grupales
+  * 1 evaluación física mensual
+
+- PLAN PREMIUM: 200 soles/mes
+  * Todo lo del plan plus
+  * 2 sesiones mensuales con entrenador personal
+  * 1 evaluación nutricional mensual
+  * Acceso a la zona de hidroterapia`,
+            
+            'plan basico': `El PLAN BÁSICO cuesta 100 soles al mes e incluye:
+
+* Acceso ilimitado a sala de musculación
+* Horario completo
+* Vestidores y duchas`,
+            
+            'plan plus': `El PLAN PLUS cuesta 150 soles al mes e incluye:
+
+* Todo lo del plan básico
+* Acceso a todas las clases grupales
+* 1 evaluación física mensual`,
+            
+            'plan premium': `El PLAN PREMIUM cuesta 200 soles al mes e incluye:
+
+* Todo lo del plan plus
+* 2 sesiones mensuales con entrenador personal
+* 1 evaluación nutricional mensual
+* Acceso a la zona de hidroterapia`,
+            
+            // Horarios
+            'horario': `Nuestros horarios de atención son:
+
+- Lunes a viernes: 6:00 AM a 10:00 PM
+- Sábados: 8:00 AM a 8:00 PM
+- Domingos y feriados: 9:00 AM a 2:00 PM`,
+            
+            // Clases
+            'clase': `Nuestro horario de clases grupales es:
+
+- Lunes: Spinning (8:00 AM, 7:00 PM), Zumba (10:00 AM, 6:00 PM)
+- Martes: Yoga (9:00 AM), Funcional (6:00 PM, 8:00 PM)
+- Miércoles: Pilates (10:00 AM), HIIT (7:00 PM)
+- Jueves: Body Pump (9:00 AM, 7:00 PM), Stretching (6:00 PM)
+- Viernes: Zumba (10:00 AM), Boxeo (7:00 PM)
+- Sábado: Yoga (10:00 AM), Funcional (12:00 PM)
+- Domingo: Pilates (10:00 AM)`,
+            
+            'yoga': `Las clases de yoga son:
+
+- Martes: 9:00 AM
+- Sábado: 10:00 AM
+
+Estas clases tienen capacidad para 15 personas y están incluidas en los planes Plus y Premium.`,
+            
+            // Formas de pago
+            'pago': `Aceptamos las siguientes formas de pago:
+
+- Efectivo
+- Tarjetas de crédito/débito (Visa, Mastercard, American Express)
+- Transferencia bancaria
+- Yape o Plin
+- Débito automático (para planes trimestrales o anuales)`,
+            
+            // Inscripción
+            'inscripcion': `Para inscribirte necesitas:
+
+- Documento de identidad (DNI o pasaporte)
+- Comprobante de domicilio
+- Pago de inscripción: 50 soles (incluye carnet de socio y evaluación física inicial)
+
+Actualmente tenemos una promoción 2x1 en inscripciones para nuevos miembros (válida hasta fin de mes).`,
+
+            // Promociones
+            'promocion': `Ofertas Especiales (válidas hasta fin de mes):
+- 2x1 en inscripciones para nuevos miembros
+- Primera sesión de entrenamiento personal gratuita para nuevos miembros
+- 50% de descuento en evaluación nutricional al contratar plan trimestral o anual
+- Promoción "Trae un amigo": 20% de descuento en tu siguiente mensualidad`
+        };
+        
+        // Palabras clave para detectar preguntas sobre precios
+        const palabrasPrecio = ['precio', 'costo', 'cuanto cuesta', 'cuanto vale', 'tarifa', 'membresia', 'mensualidad', 'plan', 'pago', 'cuánto'];
+        const palabrasClases = ['clase', 'horario', 'yoga', 'pilates', 'spinning', 'zumba', 'entrenador'];
+        const palabrasPromocion = ['promocion', 'oferta', 'descuento', 'especial'];
+        
+        // Evento para enviar mensaje al hacer clic en el botón
+        sendButton.addEventListener('click', enviarMensaje);
+        
+        // Evento para enviar mensaje al presionar Enter
+        messageInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                enviarMensaje();
+            }
+        });
+        
+        // Función para enviar mensaje
+        function enviarMensaje() {
+            const mensaje = messageInput.value.trim();
+            
+            if (!mensaje) return;
+            
+            // Limpiar el input
+            messageInput.value = '';
+            
+            // Añadir mensaje del usuario al chat
+            agregarMensaje(mensaje, 'user');
+            
+            // Procesar el mensaje y obtener respuesta
+            procesarMensaje(mensaje);
+        }
+        
+        // Función para procesar el mensaje y obtener una respuesta
+        function procesarMensaje(mensaje) {
+            const mensajeLower = mensaje.toLowerCase();
+            let respuesta = null;
+            let nivelInteres = 'verde';
+            
+            // Mostrar indicador de carga
+            const loadingId = mostrarCargando();
+            
+            setTimeout(() => {
+                // Quitar indicador de carga
+                quitarCargando(loadingId);
+                
+                // Verificar si es una pregunta sobre precios
+                if (palabrasPrecio.some(palabra => mensajeLower.includes(palabra))) {
+                    respuesta = respuestasGimnasio.precio;
+                    nivelInteres = 'rojo';
+                }
+                // Si es una pregunta sobre un plan específico
+                else if (mensajeLower.includes('plan basico') || mensajeLower.includes('plan básico')) {
+                    respuesta = respuestasGimnasio['plan basico'];
+                    nivelInteres = 'rojo';
+                }
+                else if (mensajeLower.includes('plan plus')) {
+                    respuesta = respuestasGimnasio['plan plus'];
+                    nivelInteres = 'rojo';
+                }
+                else if (mensajeLower.includes('plan premium')) {
+                    respuesta = respuestasGimnasio['plan premium'];
+                    nivelInteres = 'rojo';
+                }
+                // Si es una pregunta sobre clases
+                else if (palabrasClases.some(palabra => mensajeLower.includes(palabra))) {
+                    if (mensajeLower.includes('yoga')) {
+                        respuesta = respuestasGimnasio.yoga;
+                    } else if (mensajeLower.includes('horario')) {
+                        respuesta = respuestasGimnasio.horario;
+                    } else {
+                        respuesta = respuestasGimnasio.clase;
+                    }
+                    nivelInteres = 'amarillo';
+                }
+                // Si es una pregunta sobre formas de pago
+                else if (mensajeLower.includes('pago') || mensajeLower.includes('pagar') || mensajeLower.includes('efectivo') || mensajeLower.includes('tarjeta')) {
+                    respuesta = respuestasGimnasio.pago;
+                    nivelInteres = 'rojo';
+                }
+                // Si es una pregunta sobre inscripción
+                else if (mensajeLower.includes('inscripcion') || mensajeLower.includes('inscribir') || mensajeLower.includes('registrar') || mensajeLower.includes('unir')) {
+                    respuesta = respuestasGimnasio.inscripcion;
+                    nivelInteres = 'rojo';
+                }
+                // Si es una pregunta sobre promociones
+                else if (palabrasPromocion.some(palabra => mensajeLower.includes(palabra))) {
+                    respuesta = respuestasGimnasio.promocion;
+                    nivelInteres = 'rojo';
+                }
+                // Respuesta por defecto
+                else {
+                    respuesta = "Estoy aquí para ayudarte con información sobre nuestro gimnasio. Puedes preguntarme sobre precios, planes, horarios, clases, formas de pago o promociones actuales.";
+                    nivelInteres = 'verde';
+                }
+                
+                // Añadir respuesta al chat
+                agregarMensaje(respuesta, 'bot', nivelInteres);
+            }, 1000); // Simular tiempo de respuesta
+        }
+        
+        // Función para agregar un mensaje al chat
+        function agregarMensaje(texto, tipo, nivelInteres = null) {
+            const mensaje = document.createElement('div');
+            mensaje.className = `message ${tipo}`;
+            mensaje.textContent = texto;
+            
+            // Si hay indicador de interés y es un mensaje del bot, mostrar el semáforo
+            if (nivelInteres && tipo === 'bot') {
+                const indicador = document.createElement('div');
+                indicador.className = `interest-indicator interest-${nivelInteres}`;
+                
+                if (nivelInteres === 'rojo') {
+                    indicador.title = 'Alto interés - Pregunta por precios, pagos o inscripción';
+                    indicador.textContent = '🔴';
+                } else if (nivelInteres === 'amarillo') {
+                    indicador.title = 'Interés medio - Pregunta por planes o clases';
+                    indicador.textContent = '🟡';
+                } else {
+                    indicador.title = 'Interés general';
+                    indicador.textContent = '🟢';
+                }
+                
+                mensaje.appendChild(indicador);
+            }
+            
+            chatMessages.appendChild(mensaje);
+            
+            // Hacer scroll hasta el final
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Función para mostrar indicador de carga
+        function mostrarCargando() {
+            const id = 'loading-' + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = id;
+            loadingDiv.className = 'message bot loading';
+            
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                loadingDiv.appendChild(dot);
+            }
+            
+            chatMessages.appendChild(loadingDiv);
+            
+            // Hacer scroll hasta el final
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            return id;
+        }
+        
+        // Función para quitar indicador de carga
+        function quitarCargando(id) {
+            const loadingDiv = document.getElementById(id);
+            if (loadingDiv) {
+                loadingDiv.remove();
+            }
+        }
+    </script>
+</body>
+</html>

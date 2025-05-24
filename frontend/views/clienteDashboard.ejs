@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/clientDashboard.css">
     <link rel="stylesheet" href="/css/notifications.css">
+    <link rel="stylesheet" href="/css/chatia.css">
 </head>
 
 <body>
@@ -154,12 +155,17 @@
         <p>Transformando vidas a través del fitness</p>
     </footer>
 
-    <!-- Botón flotante de ChatIA -->
+    <!-- Campo oculto para el ID del cliente -->
+    <input type="hidden" id="cliente-id-hidden" value="<%= idCliente %>">
+    
+    <!-- Botón flotante de ChatIA (Visible y con estilo mejorado) -->
     <div class="chat-ia-button">
-        <button id="chat-ia-btn">
-            <i class="fas fa-robot"></i>
-            <span>ChatIA</span>
-        </button>
+        <a href="/chat-ollama.html" style="text-decoration: none;">
+            <button style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); border: none; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #16222a; cursor: pointer;">
+                <i class="fas fa-robot" style="font-size: 24px; margin-bottom: 3px;"></i>
+                <span style="font-size: 10px; font-weight: 600;">ChatIA</span>
+            </button>
+        </a>
     </div>
     
     <!-- Modal para ChatIA -->
@@ -556,41 +562,105 @@
         // Enviar mensaje al hacer clic en el botón
         chatIASend.addEventListener('click', enviarMensajeIA);
         
-        // Función simplificada para enviar mensaje al chat
+        // Respuestas directas para preguntas comunes sobre el gimnasio
+        const respuestasGimnasio = {
+            // Precios y planes
+            'cuanto cuesta': 'Tenemos los siguientes planes mensuales:\n\n- PLAN BÁSICO: 100 soles/mes\n  * Acceso ilimitado a sala de musculación\n  * Horario completo\n  * Vestidores y duchas\n\n- PLAN PLUS: 150 soles/mes\n  * Todo lo del plan básico\n  * Acceso a todas las clases grupales\n  * 1 evaluación física mensual\n\n- PLAN PREMIUM: 200 soles/mes\n  * Todo lo del plan plus\n  * 2 sesiones mensuales con entrenador personal\n  * 1 evaluación nutricional mensual\n  * Acceso a la zona de hidroterapia',
+            'precio': 'Tenemos los siguientes planes mensuales:\n\n- PLAN BÁSICO: 100 soles/mes\n  * Acceso ilimitado a sala de musculación\n  * Horario completo\n  * Vestidores y duchas\n\n- PLAN PLUS: 150 soles/mes\n  * Todo lo del plan básico\n  * Acceso a todas las clases grupales\n  * 1 evaluación física mensual\n\n- PLAN PREMIUM: 200 soles/mes\n  * Todo lo del plan plus\n  * 2 sesiones mensuales con entrenador personal\n  * 1 evaluación nutricional mensual\n  * Acceso a la zona de hidroterapia',
+            'membresia': 'Tenemos los siguientes planes mensuales:\n\n- PLAN BÁSICO: 100 soles/mes\n  * Acceso ilimitado a sala de musculación\n  * Horario completo\n  * Vestidores y duchas\n\n- PLAN PLUS: 150 soles/mes\n  * Todo lo del plan básico\n  * Acceso a todas las clases grupales\n  * 1 evaluación física mensual\n\n- PLAN PREMIUM: 200 soles/mes\n  * Todo lo del plan plus\n  * 2 sesiones mensuales con entrenador personal\n  * 1 evaluación nutricional mensual\n  * Acceso a la zona de hidroterapia',
+            'plan basico': 'El PLAN BÁSICO cuesta 100 soles al mes e incluye:\n\n* Acceso ilimitado a sala de musculación\n* Horario completo\n* Vestidores y duchas',
+            'plan plus': 'El PLAN PLUS cuesta 150 soles al mes e incluye:\n\n* Todo lo del plan básico\n* Acceso a todas las clases grupales\n* 1 evaluación física mensual',
+            'plan premium': 'El PLAN PREMIUM cuesta 200 soles al mes e incluye:\n\n* Todo lo del plan plus\n* 2 sesiones mensuales con entrenador personal\n* 1 evaluación nutricional mensual\n* Acceso a la zona de hidroterapia',
+            
+            // Horarios
+            'horario': 'Nuestros horarios de atención son:\n\n- Lunes a viernes: 6:00 AM a 10:00 PM\n- Sábados: 8:00 AM a 8:00 PM\n- Domingos y feriados: 9:00 AM a 2:00 PM',
+            'hora': 'Nuestros horarios de atención son:\n\n- Lunes a viernes: 6:00 AM a 10:00 PM\n- Sábados: 8:00 AM a 8:00 PM\n- Domingos y feriados: 9:00 AM a 2:00 PM',
+            
+            // Clases
+            'clase': 'Nuestro horario de clases grupales es:\n\n- Lunes: Spinning (8:00 AM, 7:00 PM), Zumba (10:00 AM, 6:00 PM)\n- Martes: Yoga (9:00 AM), Funcional (6:00 PM, 8:00 PM)\n- Miércoles: Pilates (10:00 AM), HIIT (7:00 PM)\n- Jueves: Body Pump (9:00 AM, 7:00 PM), Stretching (6:00 PM)\n- Viernes: Zumba (10:00 AM), Boxeo (7:00 PM)\n- Sábado: Yoga (10:00 AM), Funcional (12:00 PM)\n- Domingo: Pilates (10:00 AM)',
+            'yoga': 'Las clases de yoga son:\n\n- Martes: 9:00 AM\n- Sábado: 10:00 AM\n\nEstas clases tienen capacidad para 15 personas y están incluidas en los planes Plus y Premium.',
+            
+            // Formas de pago
+            'pago': 'Aceptamos las siguientes formas de pago:\n\n- Efectivo\n- Tarjetas de crédito/débito (Visa, Mastercard, American Express)\n- Transferencia bancaria\n- Yape o Plin\n- Débito automático (para planes trimestrales o anuales)',
+            
+            // Inscripción
+            'inscripcion': 'Para inscribirte necesitas:\n\n- Documento de identidad (DNI o pasaporte)\n- Comprobante de domicilio\n- Pago de inscripción: 50 soles (incluye carnet de socio y evaluación física inicial)\n\nActualmente tenemos una promoción 2x1 en inscripciones para nuevos miembros (válida hasta fin de mes).'
+        };
+        
+        // Función para enviar mensaje al servidor
         function enviarMensajeIA() {
             const mensaje = chatIAInput.value.trim();
+            
             if (!mensaje) return;
             
-            // Limpiar el input
             chatIAInput.value = '';
             
             // Añadir mensaje del usuario al chat
             agregarMensajeChat(mensaje, 'user');
             
-            // Mostrar indicador de carga
-            const loadingId = mostrarCargando();
+            // Verificar si es una pregunta sobre precios u otra información del gimnasio
+            const mensajeLower = mensaje.toLowerCase();
+            let respuestaDirecta = null;
+            let nivelInteres = { nivel: 'verde', emoji: '🟢', descripcion: 'Interés general' };
             
-            // Enviar mensaje directamente a la API principal
-            fetch('/api/chatia/mensaje', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ mensaje, clienteId })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error en la comunicación con el servicio de IA: ${response.status}`);
+            // Buscar coincidencias en las respuestas directas
+            for (const [clave, respuesta] of Object.entries(respuestasGimnasio)) {
+                if (mensajeLower.includes(clave)) {
+                    respuestaDirecta = respuesta;
+                    
+                    // Determinar nivel de interés
+                    if (['precio', 'cuanto cuesta', 'membresia', 'pago', 'inscripcion'].some(k => clave.includes(k))) {
+                        nivelInteres = { nivel: 'rojo', emoji: '🔴', descripcion: 'Alto interés - Pregunta por precios, pagos o inscripción' };
+                    } else if (['plan', 'clase', 'horario', 'yoga'].some(k => clave.includes(k))) {
+                        nivelInteres = { nivel: 'amarillo', emoji: '🟡', descripcion: 'Interés medio - Pregunta por planes o clases' };
+                    }
+                    
+                    break;
                 }
-                return response.json();
-            })
-            .then(data => {
-                // Quitar indicador de carga
-                quitarCargando(loadingId);
+            }
+            
+            if (respuestaDirecta) {
+                // Si encontramos una respuesta directa, la mostramos inmediatamente
+                console.log('Usando respuesta directa para:', mensajeLower);
+                setTimeout(() => {
+                    agregarMensajeChat(respuestaDirecta, 'bot', nivelInteres);
+                    
+                    // Si el nivel de interés es rojo (alto), mostrar notificación
+                    if (nivelInteres.nivel === 'rojo') {
+                        console.log('Cliente con alto interés detectado:', nivelInteres.descripcion);
+                    }
+                }, 1000); // Pequeño retraso para simular procesamiento
+            } else {
+                // Si no hay respuesta directa, usar el servidor
+                // Mostrar indicador de carga
+                const loadingId = mostrarCargando();
                 
-                // Añadir respuesta de la IA
-                agregarMensajeChat(data.respuesta, 'bot');
-            })
+                // Enviar mensaje al servidor
+                fetch('/api/chatia/mensaje', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ mensaje, clienteId })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error en la comunicación con el servicio de IA: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Quitar indicador de carga
+                    quitarCargando(loadingId);
+                    
+                    // Añadir respuesta de la IA con el indicador de interés (semáforo)
+                    agregarMensajeChat(data.respuesta, 'bot', data.interes);
+                    
+                    // Si el nivel de interés es rojo (alto), mostrar notificación al administrador
+                    if (data.interes && data.interes.nivel === 'rojo') {
+                        console.log('Cliente con alto interés detectado:', data.interes.descripcion);
+                    }
+                })
             .catch(error => {
                 console.error('Error:', error);
                 // Quitar indicador de carga
@@ -602,7 +672,7 @@
         }
         
         // Función para añadir mensajes al chat
-        function agregarMensajeChat(texto, tipo) {
+        function agregarMensajeChat(texto, tipo, interes = null) {
             const mensaje = document.createElement('div');
             mensaje.className = `message ${tipo}`;
             
@@ -610,11 +680,34 @@
             if (tipo === 'user') {
                 mensaje.style.cssText = 'align-self: flex-end; background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(79, 172, 254, 0.2)); padding: 12px 15px; border-radius: 15px 15px 0 15px; max-width: 80%; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1);';
             } else if (tipo.includes('bot')) {
-                mensaje.style.cssText = 'align-self: flex-start; background: rgba(255, 255, 255, 0.1); padding: 12px 15px; border-radius: 15px 15px 15px 0; max-width: 80%; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05);';
+                mensaje.style.cssText = 'align-self: flex-start; background: rgba(255, 255, 255, 0.1); padding: 12px 15px; border-radius: 15px 15px 15px 0; max-width: 80%; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); position: relative;';
             }
             
             if (tipo.includes('error')) {
                 mensaje.style.borderColor = 'rgba(220, 53, 69, 0.5)';
+            }
+            
+            // Si hay indicador de interés y es un mensaje del bot, mostrar el semáforo
+            if (interes && tipo.includes('bot')) {
+                const indicador = document.createElement('div');
+                indicador.style.cssText = 'position: absolute; top: -10px; right: -10px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);';
+                
+                // Aplicar estilo según el nivel de interés
+                if (interes.nivel === 'rojo') {
+                    indicador.style.backgroundColor = '#ff4d4d'; // Rojo
+                    indicador.title = 'Alto interés - Pregunta por precios, pagos o inscripción';
+                    indicador.textContent = '🔴';
+                } else if (interes.nivel === 'amarillo') {
+                    indicador.style.backgroundColor = '#ffcc00'; // Amarillo
+                    indicador.title = 'Interés medio - Pregunta por planes o entrenadores';
+                    indicador.textContent = '🟡';
+                } else {
+                    indicador.style.backgroundColor = '#66cc66'; // Verde
+                    indicador.title = 'Interés general - Hace preguntas generales';
+                    indicador.textContent = '🟢';
+                }
+                
+                mensaje.appendChild(indicador);
             }
             
             const p = document.createElement('p');
@@ -663,6 +756,8 @@
             }
         }
     </script>
+    <!-- Script de ChatIA -->
+    <script src="/js/chatia.js"></script>
 </body>
 
 </html>

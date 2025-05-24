@@ -55,6 +55,10 @@ app.set('views', path.join(__dirname, 'frontend/views'));
 // Servir archivos estáticos (CSS, imágenes, JS de frontend)
 app.use(express.static(path.join(__dirname, 'frontend/public')));
 
+// Importar y configurar las rutas de ChatIA
+const chatIARoutes = require('./routes/chatIA');
+app.use('/api/chatia', chatIARoutes);
+
 // Rutas de las vistas
 app.get('/', (req, res) => {
     // Verificar si ya hay una sesión activa

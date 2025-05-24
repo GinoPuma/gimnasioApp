@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat de Precios y Planes del Gimnasio</title>
+    <title>Chat del Gimnasio con Ollama</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -114,15 +114,15 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
-        .interest-red {
+        .interest-rojo {
             background-color: #ff4d4d;
         }
         
-        .interest-yellow {
+        .interest-amarillo {
             background-color: #ffcc00;
         }
         
-        .interest-green {
+        .interest-verde {
             background-color: #66cc66;
         }
         
@@ -209,17 +209,12 @@
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h2><i class="fas fa-robot"></i> Asistente de Precios y Planes</h2>
+            <h2><i class="fas fa-robot"></i> Asistente IA con Ollama</h2>
             <a href="javascript:history.back()"><i class="fas fa-arrow-left"></i> Volver</a>
-        </div>
-        <div class="status-container">
-            <div id="status-indicator" class="status-indicator offline">
-                <i class="fas fa-circle"></i> Conectando con Ollama...
-            </div>
         </div>
         <div class="chat-messages" id="chat-messages">
             <div class="message bot">
-                ¡Hola! Soy tu asistente del gimnasio. ¿En qué puedo ayudarte hoy? Puedes preguntarme sobre precios, planes, horarios o promociones.
+                ¡Hola! Soy tu asistente del gimnasio usando el modelo personalizado de Ollama. ¿En qué puedo ayudarte hoy? Puedes preguntarme sobre precios, planes, horarios o promociones.
             </div>
         </div>
         <div class="chat-input">
@@ -228,46 +223,102 @@
         </div>
     </div>
     
-    <!-- Incluir el cliente de Ollama -->
-    <script src="/js/ollama-client.js"></script>
-    
     <script>
         // Referencias a elementos del DOM
         const chatMessages = document.getElementById('chat-messages');
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
-        const statusIndicator = document.getElementById('status-indicator');
         
-        // Crear instancia del cliente de Ollama
-        const ollamaClient = new OllamaClient({
-            model: 'gimnasio-app', // Usar el modelo específico para el gimnasio
-            fallbackModel: 'llama3.1:8b' // Modelo de respaldo si el principal no está disponible
-        });
-        
-        // Verificar disponibilidad de Ollama al cargar la página
-        window.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const isAvailable = await ollamaClient.checkAvailability();
-                
-                if (isAvailable) {
-                    statusIndicator.className = 'status-indicator online';
-                    statusIndicator.innerHTML = '<i class="fas fa-circle"></i> Conectado a Ollama';
-                    
-                    // Añadir mensaje de bienvenida
-                    agregarMensaje('¡Hola! Soy el asistente virtual del gimnasio especializado en precios y planes. ¿En qué puedo ayudarte?', 'bot');
-                } else {
-                    statusIndicator.className = 'status-indicator offline';
-                    statusIndicator.innerHTML = '<i class="fas fa-circle"></i> Ollama no disponible';
-                    
-                    // Mensaje de error
-                    agregarMensaje('Lo siento, el servicio de IA no está disponible en este momento. Por favor, inténtalo más tarde.', 'bot error');
-                }
-            } catch (error) {
-                console.error('Error al verificar Ollama:', error);
-                statusIndicator.className = 'status-indicator offline';
-                statusIndicator.innerHTML = '<i class="fas fa-circle"></i> Error de conexión';
-            }
-        });
+        // Respuestas directas para preguntas comunes sobre el gimnasio
+        const respuestasGimnasio = {
+            // Precios y planes
+            'precio': `Tenemos los siguientes planes mensuales:
+
+- PLAN BÁSICO: 100 soles/mes
+  * Acceso ilimitado a sala de musculación
+  * Horario completo
+  * Vestidores y duchas
+
+- PLAN PLUS: 150 soles/mes
+  * Todo lo del plan básico
+  * Acceso a todas las clases grupales
+  * 1 evaluación física mensual
+
+- PLAN PREMIUM: 200 soles/mes
+  * Todo lo del plan plus
+  * 2 sesiones mensuales con entrenador personal
+  * 1 evaluación nutricional mensual
+  * Acceso a la zona de hidroterapia`,
+            
+            'plan basico': `El PLAN BÁSICO cuesta 100 soles al mes e incluye:
+
+* Acceso ilimitado a sala de musculación
+* Horario completo
+* Vestidores y duchas`,
+            
+            'plan plus': `El PLAN PLUS cuesta 150 soles al mes e incluye:
+
+* Todo lo del plan básico
+* Acceso a todas las clases grupales
+* 1 evaluación física mensual`,
+            
+            'plan premium': `El PLAN PREMIUM cuesta 200 soles al mes e incluye:
+
+* Todo lo del plan plus
+* 2 sesiones mensuales con entrenador personal
+* 1 evaluación nutricional mensual
+* Acceso a la zona de hidroterapia`,
+            
+            // Horarios
+            'horario': `Nuestros horarios de atención son:
+
+- Lunes a viernes: 6:00 AM a 10:00 PM
+- Sábados: 8:00 AM a 8:00 PM
+- Domingos y feriados: 9:00 AM a 2:00 PM`,
+            
+            // Clases
+            'clase': `Nuestro horario de clases grupales es:
+
+- Lunes: Spinning (8:00 AM, 7:00 PM), Zumba (10:00 AM, 6:00 PM)
+- Martes: Yoga (9:00 AM), Funcional (6:00 PM, 8:00 PM)
+- Miércoles: Pilates (10:00 AM), HIIT (7:00 PM)
+- Jueves: Body Pump (9:00 AM, 7:00 PM), Stretching (6:00 PM)
+- Viernes: Zumba (10:00 AM), Boxeo (7:00 PM)
+- Sábado: Yoga (10:00 AM), Funcional (12:00 PM)
+- Domingo: Pilates (10:00 AM)`,
+            
+            'yoga': `Las clases de yoga son:
+
+- Martes: 9:00 AM
+- Sábado: 10:00 AM
+
+Estas clases tienen capacidad para 15 personas y están incluidas en los planes Plus y Premium.`,
+            
+            // Formas de pago
+            'pago': `Aceptamos las siguientes formas de pago:
+
+- Efectivo
+- Tarjetas de crédito/débito (Visa, Mastercard, American Express)
+- Transferencia bancaria
+- Yape o Plin
+- Débito automático (para planes trimestrales o anuales)`,
+            
+            // Inscripción
+            'inscripcion': `Para inscribirte necesitas:
+
+- Documento de identidad (DNI o pasaporte)
+- Comprobante de domicilio
+- Pago de inscripción: 50 soles (incluye carnet de socio y evaluación física inicial)
+
+Actualmente tenemos una promoción 2x1 en inscripciones para nuevos miembros (válida hasta fin de mes).`,
+
+            // Promociones
+            'promocion': `Ofertas Especiales (válidas hasta fin de mes):
+- 2x1 en inscripciones para nuevos miembros
+- Primera sesión de entrenamiento personal gratuita para nuevos miembros
+- 50% de descuento en evaluación nutricional al contratar plan trimestral o anual
+- Promoción "Trae un amigo": 20% de descuento en tu siguiente mensualidad`
+        };
         
         // Evento para enviar mensaje al hacer clic en el botón
         sendButton.addEventListener('click', enviarMensaje);
@@ -284,107 +335,80 @@
         function enviarMensaje() {
             const mensaje = messageInput.value.trim();
             
-            if (mensaje === '') return;
+            if (!mensaje) return;
+            
+            // Limpiar el input
+            messageInput.value = '';
             
             // Añadir mensaje del usuario al chat
             agregarMensaje(mensaje, 'user');
             
-            // Limpiar input
-            messageInput.value = '';
-            
-            // Procesar mensaje y obtener respuesta
+            // Procesar el mensaje y obtener respuesta
             procesarMensaje(mensaje);
         }
         
         // Función para procesar el mensaje y obtener una respuesta
         async function procesarMensaje(mensaje) {
-            // Evaluar nivel de interés basado en palabras clave
-            const nivelInteres = evaluarInteres(mensaje);
-            
             // Mostrar indicador de carga
             const loadingId = mostrarCargando();
             
             try {
-                // Crear un prompt específico para el modelo
-                const prompt = `Eres un asistente virtual especializado en responder preguntas sobre el gimnasio, especialmente sobre precios, planes, horarios, clases y procesos de inscripción. Responde de manera concisa y precisa a la siguiente pregunta del cliente: "${mensaje}"
-
-Información de referencia para responder:
-
-- PLANES MENSUALES:
-  * PLAN BÁSICO: 100 soles/mes (Acceso ilimitado a sala de musculación, horario completo, vestidores y duchas)
-  * PLAN PLUS: 150 soles/mes (Todo lo del plan básico + acceso a todas las clases grupales + 1 evaluación física mensual)
-  * PLAN PREMIUM: 200 soles/mes (Todo lo del plan plus + 2 sesiones mensuales con entrenador personal + 1 evaluación nutricional)
-
-- DESCUENTOS:
-  * Plan trimestral: 10% de descuento
-  * Plan semestral: 15% de descuento
-  * Plan anual: 20% de descuento
-
-- HORARIOS:
-  * Lunes a viernes: 6:00 AM - 10:00 PM
-  * Sábados: 8:00 AM - 8:00 PM
-  * Domingos: 9:00 AM - 2:00 PM
-
-- CLASES GRUPALES:
-  * Lunes: Spinning (8:00 AM, 7:00 PM), Zumba (10:00 AM, 6:00 PM)
-  * Martes: Yoga (9:00 AM), Funcional (6:00 PM, 8:00 PM)
-  * Miércoles: Pilates (10:00 AM), HIIT (7:00 PM)
-  * Jueves: Body Pump (9:00 AM, 7:00 PM), Stretching (6:00 PM)
-  * Viernes: Zumba (10:00 AM), Boxeo (7:00 PM)
-  * Sábado: Yoga (10:00 AM), Funcional (12:00 PM)
-  * Domingo: Pilates (10:00 AM)
-
-- INSCRIPCIÓN:
-  * Documentos necesarios: DNI, comprobante de domicilio, certificado médico (opcional)
-  * Proceso: Completar formulario en recepción o en línea, realizar pago, foto para carnet
-
-- FORMAS DE PAGO:
-  * Efectivo
-  * Tarjetas de débito/crédito (Visa, Mastercard, American Express)
-  * Transferencia bancaria
-  * Yape o Plin
-
-- PROMOCIONES ACTUALES:
-  * 2x1 en inscripciones para nuevos miembros
-  * Primera sesión de entrenamiento personal gratuita para nuevos miembros
-  * 50% de descuento en evaluación nutricional al contratar plan trimestral o anual
-  * Promoción "Trae un amigo": 20% de descuento en tu siguiente mensualidad`;
+                // Enviar solicitud a la API de chatIA
+                const response = await fetch('/api/chatia/mensaje', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ mensaje })
+                });
                 
-                // Consultar a Ollama
-                const respuesta = await ollamaClient.generateResponse(prompt);
+                // Verificar si la respuesta es exitosa
+                if (!response.ok) {
+                    throw new Error(`Error en la respuesta: ${response.status} ${response.statusText}`);
+                }
+                
+                // Obtener los datos de la respuesta
+                const data = await response.json();
                 
                 // Quitar indicador de carga
                 quitarCargando(loadingId);
                 
                 // Añadir respuesta al chat
-                agregarMensaje(respuesta, 'bot', nivelInteres);
+                agregarMensaje(data.respuesta, 'bot', data.interes.nivel);
             } catch (error) {
                 console.error('Error al procesar mensaje:', error);
                 
                 // Quitar indicador de carga
                 quitarCargando(loadingId);
                 
-                // Mostrar mensaje de error
-                agregarMensaje('Lo siento, ha ocurrido un error al procesar tu mensaje. Por favor, inténtalo de nuevo más tarde.', 'bot error');
-            }
-        }
-        
-        // Función para evaluar el nivel de interés
-        function evaluarInteres(mensaje) {
-            const palabrasPrecio = ['precio', 'costo', 'cuánto cuesta'];
-            const palabrasClases = ['clase', 'clases', 'horario', 'horarios'];
-            const palabrasPromocion = ['promoción', 'promociones', 'oferta', 'ofertas'];
-            
-            const mensajeLower = mensaje.toLowerCase();
-            
-            if (palabrasPrecio.some(palabra => mensajeLower.includes(palabra))) {
-                return 'rojo';
-            } else if (palabrasClases.some(palabra => mensajeLower.includes(palabra))) {
-                return 'amarillo';
-            } else if (palabrasPromocion.some(palabra => mensajeLower.includes(palabra))) {
-                return 'rojo';
-            } else {
-                return 'verde';
+                // Determinar qué respuesta predefinida usar
+                let respuesta = respuestasGimnasio.default;
+                const mensajeLower = mensaje.toLowerCase();
+                
+                for (const [clave, valor] of Object.entries(respuestasGimnasio)) {
+                    if (mensajeLower.includes(clave)) {
+                        respuesta = valor;
+                        break;
+                    }
+                }
+                
+                // Si no hay coincidencia, usar respuesta por defecto
+                if (!respuesta) {
+                    respuesta = "Estoy aquí para ayudarte con información sobre nuestro gimnasio. Puedes preguntarme sobre precios, planes, horarios, clases o promociones.";
+                }
+                
+                // Determinar nivel de interés
+                let nivelInteres = 'verde';
+                if (mensajeLower.includes('precio') || mensajeLower.includes('costo') || mensajeLower.includes('plan') || 
+                    mensajeLower.includes('inscripcion') || mensajeLower.includes('pago')) {
+                    nivelInteres = 'rojo';
+                } else if (mensajeLower.includes('horario') || mensajeLower.includes('clase') || 
+                          mensajeLower.includes('entrenador')) {
+                    nivelInteres = 'amarillo';
+                }
+                
+                // Añadir respuesta al chat
+                agregarMensaje(respuesta, 'bot', nivelInteres);
             }
         }
         
